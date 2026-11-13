@@ -1,6 +1,6 @@
 <div align="center">
 
-# majestic-ui
+# Majestic-ui-skill
 
 **Ask your AI agent for a website. Get one that looks designed, not generated.**
 
