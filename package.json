@@ -1,0 +1,79 @@
+{
+  "name": "majestic-ui-skill",
+  "version": "1.0.0",
+  "description": "An agent skill that makes AI-built websites look designed, not generated, and checks them in a real browser.",
+  "keywords": [
+    "agent-skill",
+    "claude-code",
+    "claude-skill",
+    "codex",
+    "ai-agent",
+    "ui",
+    "ux",
+    "design",
+    "landing-page",
+    "frontend",
+    "design-system",
+    "accessibility",
+    "nextjs",
+    "lint",
+    "design-to-code"
+  ],
+  "homepage": "https://github.com/Aayan15728/majestic-ui-skill#readme",
+  "bugs": {
+    "url": "https://github.com/Aayan15728/majestic-ui-skill/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aayan15728/majestic-ui-skill.git"
+  },
+  "license": "MIT",
+  "author": "Aayan Sharma (https://aayansharma.netlify.app)",
+  "type": "module",
+  "bin": {
+    "majestic-ui": "bin/majestic-ui.mjs",
+    "majestic-ui-skill": "bin/majestic-ui.mjs"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./SKILL.md": "./SKILL.md",
+    "./SUMMARY.md": "./SUMMARY.md",
+    "./references/*": "./references/*",
+    "./examples/*": "./examples/*",
+    "./scripts/*": "./scripts/*"
+  },
+  "files": [
+    "bin/",
+    "SKILL.md",
+    "SUMMARY.md",
+    "references/",
+    "examples/",
+    "scripts/",
+    "starters/",
+    "!starters/**/node_modules",
+    "!starters/**/.next",
+    "!**/majestic-check"
+  ],
+  "scripts": {
+    "help": "node bin/majestic-ui.mjs help",
+    "install-skill": "node bin/majestic-ui.mjs install",
+    "examples": "node bin/majestic-ui.mjs examples",
+    "lint": "node scripts/slop-lint.mjs",
+    "lint:examples": "node scripts/slop-lint.mjs examples",
+    "verify": "node scripts/verify-render.mjs",
+    "compare": "node scripts/compare-image.mjs",
+    "extract": "node scripts/extract-spec.mjs",
+    "fonts": "node scripts/vendor-fonts.mjs",
+    "score": "node scripts/score-pages.mjs",
+    "inventory": "node scripts/inventory.mjs",
+    "check": "node --check bin/majestic-ui.mjs && node --check scripts/slop-lint.mjs && node --check scripts/verify-render.mjs && node --check scripts/compare-image.mjs && node --check scripts/extract-spec.mjs && node --check scripts/vendor-fonts.mjs && node --check scripts/score-pages.mjs && node --check scripts/inventory.mjs",
+    "pack:check": "npm pack --dry-run",
+    "prepublishOnly": "npm run check"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

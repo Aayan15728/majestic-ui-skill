@@ -13,6 +13,7 @@ that hold up next to the best indie and startup sites, and then checks its own w
 [![Agent Skill](https://img.shields.io/badge/agent-skill-f97316?style=flat-square)](SKILL.md)
 [![Examples](https://img.shields.io/badge/examples-38-16a34a?style=flat-square)](examples/README.md)
 [![Next.js 16 starter](https://img.shields.io/badge/starter-Next.js%2016-000000?style=flat-square&logo=nextdotjs)](starters/nextjs)
+[![npm](https://img.shields.io/npm/v/majestic-ui-skill?style=flat-square&color=cb3837&logo=npm)](https://www.npmjs.com/package/majestic-ui-skill)
 [![Node 22+](https://img.shields.io/badge/node-22%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white)](scripts)
 [![Stars](https://img.shields.io/github/stars/Aayan15728/majestic-ui-skill?style=flat-square&color=eab308)](https://github.com/Aayan15728/majestic-ui-skill/stargazers)
 
@@ -61,7 +62,15 @@ It's clean, but it looks generated, and people can tell.
 
 The root of this repo **is** the skill, so installing it means putting this folder where your agent looks for skills.
 
-**Claude Code** (one command):
+**With npm** (easiest, no clone needed):
+
+```bash
+npx majestic-ui-skill install
+```
+
+That copies the skill into `~/.claude/skills/majestic-ui`. Add `--agent codex`, `--agent factory` or `--agent all` for other agents, and `--project` to install into the current project instead of your home folder.
+
+**With git** (Claude Code):
 
 ```bash
 git clone https://github.com/Aayan15728/majestic-ui-skill ~/.claude/skills/majestic-ui
@@ -255,6 +264,28 @@ npm run dev
 
 <br />
 
+## Command line
+
+The npm package ships one command, `majestic-ui`, that installs the skill and runs every checking script from anywhere.
+Use it with `npx` (nothing to install), or install it once with `npm install -g majestic-ui-skill`.
+
+| Command | What it does |
+|---|---|
+| `npx majestic-ui-skill install` | Install the skill for Claude Code. Options: `--agent claude\|codex\|factory\|all`, `--project`, `--dir <path>`, `--force` |
+| `npx majestic-ui-skill uninstall` | Remove the installed skill (same options) |
+| `npx majestic-ui-skill starter my-site` | Copy the Next.js 16 starter into `my-site` |
+| `npx majestic-ui-skill examples` | List the 38 reference pages and what each suits; add a name for one example's files |
+| `npx majestic-ui-skill lint page.html --defaults` | Run the slop linter |
+| `npx majestic-ui-skill verify page.html --ref gallery-tiles` | Run the real-browser check (example names work for `--ref`) |
+| `npx majestic-ui-skill compare design.png page.html` | Score a page against a design image |
+| `npx majestic-ui-skill extract design.png` | Read a design image into a spec |
+| `npx majestic-ui-skill fonts page.html` | Copy or inline a page's fonts |
+| `npx majestic-ui-skill score runs/` | Rank many pages |
+| `npx majestic-ui-skill inventory src` | Measure design sprawl in a codebase |
+| `npx majestic-ui-skill help` | Show every command and option |
+
+After a global install, drop the `npx` and use `majestic-ui <command>`.
+
 ## Scripts
 
 Seven checking tools. They need only **Node 22 or newer** and nothing to install. The browser ones use the
@@ -319,7 +350,9 @@ majestic-ui-skill/
 │   └── shadcn.md           re-theming shadcn/ui
 ├── examples/             38 reference pages + shared fonts
 ├── starters/nextjs/      Next.js 16 starter
-└── scripts/              7 zero-install checking tools
+├── scripts/              7 zero-install checking tools
+├── bin/majestic-ui.mjs   the npx / npm command line
+└── package.json          npm package setup
 ```
 
 <br />
