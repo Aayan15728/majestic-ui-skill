@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)">
+<title>Sumlight — revenue analytics that names the post that paid</title>
+<script>
+  /* theme before first paint: a saved choice wins, otherwise the system setting */
+  try { const t = localStorage.getItem("sumlight-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Serif"; src: url(../fonts/geist-serif-regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+/* ---------- tokens: light (the Gallery default) ---------- */
+:root {
+  --canvas: #ffffff;
+  --shell: #f5f5f7;          /* outer shell of card-in-card, section tint */
+  --card: #ffffff;           /* inner card on a shell */
+  --raise: #fafafc;          /* quiet hover step */
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;          /* muted text: 4.6:1 on the shell */
+  --ink-3: #86868b;          /* icons and rules only, never body text */
+  --hairline: #e0e0e0;
+  --hairline-2: #d2d2d7;
+  --band: #1d1d1f;           /* the dark band */
+  --band-ink: rgb(237 237 237);
+  --band-ink-2: #a1a1a6;
+  --feature: #1d1d1f;        /* featured pricing shell */
+  --feature-inner: #0f0f10;
+  --feature-ink: rgb(237 237 237);
+  --feature-ink-2: #a1a1a6;
+  --action: #0066cc;         /* primary pill, links, focus */
+  --action-hover: #0071e3;
+  --action-ink: #ffffff;
+  --link: #0066cc;
+  --good: #1e7f4f;
+  --tag: #fff4e5;
+  --tag-ink: #9a4b00;
+  --dot: 29 29 31;           /* rgb triplet for the footer hills */
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist Serif", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+  color-scheme: light;
+}
+/* ---------- tokens: dark. Surfaces step up in lightness; nothing is simply inverted ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #0b0b0c; --shell: #161618; --card: #1c1c1e; --raise: #202022;
+    --ink: rgb(237 237 237); --ink-2: #a1a1a6; --ink-3: #6e6e73;
+    --hairline: rgb(255 255 255 / .09); --hairline-2: rgb(255 255 255 / .15);
+    --band: #161618; --band-ink: rgb(237 237 237); --band-ink-2: #a1a1a6;
+    --feature: #26262a; --feature-inner: #1a1a1d; --feature-ink: rgb(237 237 237); --feature-ink-2: #a1a1a6;
+    --action: #0071e3; --action-hover: #0a7cf0; --action-ink: #ffffff; --link: #4ea4ff;
+    --good: #4cc38a; --tag: #3a2a12; --tag-ink: #ffc56b; --dot: 237 237 237;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #0b0b0c; --shell: #161618; --card: #1c1c1e; --raise: #202022;
+  --ink: rgb(237 237 237); --ink-2: #a1a1a6; --ink-3: #6e6e73;
+  --hairline: rgb(255 255 255 / .09); --hairline-2: rgb(255 255 255 / .15);
+  --band: #161618; --band-ink: rgb(237 237 237); --band-ink-2: #a1a1a6;
+  --feature: #26262a; --feature-inner: #1a1a1d; --feature-ink: rgb(237 237 237); --feature-ink-2: #a1a1a6;
+  --action: #0071e3; --action-hover: #0a7cf0; --action-ink: #ffffff; --link: #4ea4ff;
+  --good: #4cc38a; --tag: #3a2a12; --tag-ink: #ffc56b; --dot: 237 237 237;
+  color-scheme: dark;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); scroll-padding-top: 24px; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 17px/1.47 var(--font-ui); letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, figure, blockquote { margin: 0; }
+ul { padding: 0; list-style: none; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+::selection { background: color-mix(in oklab, var(--action) 24%, transparent); }
+:focus-visible { outline: 2px solid var(--action); outline-offset: 3px; border-radius: 8px; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+main { overflow-x: clip; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-inline: var(--gutter); }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: var(--ink); color: var(--canvas); font-size: 14px; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+.icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* section heading: Geist Serif, two-tone, the same spec in every section */
+.sec { padding-block: 120px 0; }
+.sec-head { font: 400 48px/1.08 var(--font-display); letter-spacing: -0.025em; max-width: 20ch; }
+.sec-head span { color: var(--ink-2); }
+.sec-head.center { margin-inline: auto; text-align: center; }
+.sec-lead { margin-top: 20px; max-width: 52ch; color: var(--ink-2); font-size: 19px; line-height: 1.5; }
+.center + .sec-lead, .sec-lead.center { margin-inline: auto; text-align: center; }
+
+/* buttons: one spec everywhere */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding-inline: 22px; border: 0; border-radius: 999px; font-size: 16px; font-weight: 500;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease); white-space: nowrap; }
+.btn:active { transform: scale(.95); }
+.btn.primary { background: var(--action); color: var(--action-ink); }
+.btn.primary:hover { background: var(--action-hover); }
+.btn.ink { background: var(--ink); color: var(--canvas); }
+.btn.ghost { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline-2); }
+.btn.ghost:hover { background: var(--raise); }
+.btn.block { width: 100%; }
+.link { color: var(--link); text-underline-offset: 3px; }
+.link:hover { text-decoration: underline; }
+
+/* ---------- nav ---------- */
+.nav { height: 64px; display: flex; align-items: center; gap: 32px; }
+.logo { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; }
+.logo svg { width: 20px; height: 20px; }
+.links { display: flex; gap: 28px; font-size: 15px; color: var(--ink-2); margin-inline: auto; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.nav-r { display: flex; align-items: center; gap: 8px; }
+.nav-r .login { font-size: 15px; font-weight: 500; padding-inline: 12px; height: 44px; display: inline-flex; align-items: center; }
+.theme { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); transition: background-color 150ms var(--ease), color 150ms var(--ease); }
+.theme:hover { background: var(--shell); color: var(--ink); }
+.theme .moon { display: none; }
+:root[data-theme="dark"] .theme .sun { display: none; }
+:root[data-theme="dark"] .theme .moon { display: block; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .theme .sun { display: none; } :root:not([data-theme="light"]) .theme .moon { display: block; } }
+
+/* ---------- hero ---------- */
+.hero { padding-top: 88px; text-align: center; }
+.hero h1 { font: 400 76px/1.02 var(--font-display); letter-spacing: -0.03em; max-width: 15ch; margin-inline: auto; }
+.hero h1 span { color: var(--ink-2); }
+.hero .lead { margin: 24px auto 0; max-width: 46ch; color: var(--ink-2); font-size: 20px; line-height: 1.5; }
+.hero .lead b { color: var(--ink); font-weight: 500; }
+.capture { margin: 36px auto 0; width: min(100%, 460px); height: 52px; display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 16px; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline-2); }
+.capture:focus-within { box-shadow: inset 0 0 0 1px var(--action), 0 0 0 3px color-mix(in oklab, var(--action) 22%, transparent); }
+.capture svg { color: var(--ink-2); }
+.capture input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 16px; caret-color: var(--action); }
+.capture input::placeholder { color: var(--ink-2); }
+.capture .btn { height: 44px; }
+.fine { margin-top: 16px; font-size: 14px; color: var(--ink-2); }
+.fine b { color: var(--ink); font-weight: 500; }
+
+/* product board: tabs + chart, crossing the fold */
+.board { margin: 64px auto 0; max-width: 1040px; border-radius: 24px; background: var(--shell); padding: 8px; text-align: left; }
+.board-in { border-radius: 18px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 24px; display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
+.board-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.board-top h2 { font-size: 15px; font-weight: 500; }
+.board-top p { font-size: 14px; color: var(--ink-2); }
+.seg { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--shell); }
+.seg button { height: 32px; padding-inline: 12px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font-size: 14px; font-weight: 500; transition: background-color 150ms var(--ease), color 150ms var(--ease); }
+.seg button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline); }
+.seg button:hover { color: var(--ink); }
+.big { margin-top: 20px; display: flex; align-items: baseline; gap: 12px; }
+.big strong { font: 400 44px/1 var(--font-display); letter-spacing: -0.02em; }
+.big span { font-size: 14px; font-weight: 500; color: var(--good); }
+.chart { margin-top: 20px; width: 100%; height: 200px; display: block; }
+.chart .grid line { stroke: var(--hairline); }
+.chart .area { fill: color-mix(in oklab, var(--action) 9%, transparent); }
+.chart .line { fill: none; stroke: var(--action); stroke-width: 2; stroke-linejoin: round; }
+.chart .ticks text { fill: var(--ink-2); font: 12px var(--font-ui); }
+.sources h3 { font-size: 14px; font-weight: 500; color: var(--ink-2); }
+.sources ul { margin-top: 12px; display: grid; }
+.sources li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 12px; padding-block: 12px; border-top: 1px solid var(--hairline); font-size: 15px; }
+.sources li:first-child { border-top: 0; }
+.sources .bar { grid-column: 2 / 4; height: 4px; border-radius: 4px; background: var(--shell); overflow: hidden; margin-top: -4px; }
+.sources .bar i { display: block; height: 100%; background: var(--ink); border-radius: 4px; }
+.sources li:first-child .bar i { background: var(--action); }
+.sources .src { color: var(--ink-2); width: 20px; height: 20px; }
+
+/* ---------- feature split ---------- */
+.split { margin-top: 64px; display: grid; grid-template-columns: 360px 1fr; gap: 72px; align-items: center; }
+.tag { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding-inline: 10px; border-radius: 999px; background: color-mix(in oklab, var(--action) 10%, var(--canvas)); color: var(--link); font-size: 13px; font-weight: 500; }
+.tag svg { width: 14px; height: 14px; }
+.split h3 { margin-top: 20px; font: 500 28px/1.15 var(--font-ui); letter-spacing: -0.03em; max-width: 16ch; }
+.split .copy p { margin-top: 12px; color: var(--ink-2); }
+.quote { margin-top: 32px; padding-top: 24px; border-top: 1px dashed var(--hairline-2); }
+.who { display: flex; align-items: center; gap: 12px; }
+.av { width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; font-size: 13px; font-weight: 600; color: #fff; flex: none; }
+.who b { display: block; font-size: 15px; font-weight: 500; }
+.who small { display: block; font-size: 13px; color: var(--ink-2); }
+.quote blockquote { margin-top: 16px; font-size: 16px; line-height: 1.55; }
+.handle { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--shell); font-size: 14px; }
+.journey { border-radius: 24px; background: var(--shell); padding: 32px; }
+.journey-in { border-radius: 18px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 24px; }
+.j-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--hairline); }
+.j-head b { font-weight: 500; font-size: 15px; }
+.j-head span { font-size: 13px; color: var(--ink-2); }
+.steps { margin-top: 8px; display: grid; }
+.step { position: relative; display: grid; grid-template-columns: 32px 1fr auto; gap: 16px; align-items: start; padding-block: 16px; }
+.step::before { content: ""; position: absolute; left: 15px; top: 48px; bottom: -16px; width: 1px; background: var(--hairline-2); }
+.step:last-child::before { display: none; }
+.dotc { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; background: var(--shell); color: var(--ink-2); }
+.dotc svg { width: 16px; height: 16px; }
+.step:last-child .dotc { background: var(--action); color: var(--action-ink); }
+.step b { display: block; font-size: 15px; font-weight: 500; }
+.step p { font-size: 14px; color: var(--ink-2); }
+.step time { font: 400 13px var(--font-mono); color: var(--ink-2); white-space: nowrap; }
+.paid { font: 400 22px/1 var(--font-display); }
+
+/* ---------- logos + dark band ---------- */
+.logos { padding-block: 96px 64px; text-align: center; }
+.logos p { font-size: 14px; color: var(--ink-2); }
+.logo-row { margin-top: 28px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 48px; color: var(--ink-2); }
+.wm { display: inline-flex; align-items: center; gap: 8px; font-size: 20px; letter-spacing: -0.02em; white-space: nowrap; }
+.wm svg { width: 20px; height: 20px; }
+.wm.a { font-weight: 600; } .wm.b { font: 400 22px var(--font-display); } .wm.c { font-weight: 500; letter-spacing: .14em; font-size: 16px; } .wm.d { font: 400 18px var(--font-mono); } .wm.e { font-weight: 600; letter-spacing: -0.04em; }
+.band { background: var(--band); color: var(--band-ink); }
+.band-top { height: 32px; background: var(--canvas); border-radius: 0 0 32px 32px; }
+.band-in { padding-block: 96px 112px; text-align: center; }
+.band h2 { font: 500 28px/1.2 var(--font-ui); letter-spacing: -0.03em; max-width: 24ch; margin-inline: auto; }
+.band h2 span { color: var(--band-ink-2); }
+.verbs { margin-top: 48px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.verbs a { width: 120px; display: grid; justify-items: center; gap: 12px; padding: 16px 8px; border-radius: 16px; font-size: 14px; font-weight: 500; transition: background-color 150ms var(--ease); }
+.verbs a:hover { background: rgb(255 255 255 / .06); }
+.verbs svg { width: 28px; height: 28px; color: var(--band-ink-2); stroke-width: 1.4; }
+.band-bottom { height: 32px; background: var(--canvas); border-radius: 32px 32px 0 0; }
+
+/* ---------- bento ---------- */
+.bento { margin-top: 56px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.cell { min-width: 0; border-radius: 24px; background: var(--shell); padding: 28px; display: flex; flex-direction: column; gap: 20px; min-height: 280px; }
+.cell.w3 { grid-column: span 3; } .cell.w2 { grid-column: span 2; } .cell.w4 { grid-column: span 4; }
+.cell h3 { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+.cell h3 + p { margin-top: 4px; font-size: 15px; color: var(--ink-2); max-width: 36ch; }
+.cell .art { margin-top: auto; }
+.code { border-radius: 14px; overflow-x: auto; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 16px 20px; font: 400 13px/1.7 var(--font-mono); color: var(--ink-2); white-space: nowrap; }
+.code b { color: var(--ink); font-weight: 400; }
+.code i { color: var(--link); font-style: normal; }
+.alerts { display: grid; gap: 8px; }
+.alert { display: flex; align-items: center; gap: 12px; border-radius: 14px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 12px 14px; font-size: 14px; }
+.alert:nth-child(2) { margin-inline: 12px; opacity: .72; } .alert:nth-child(3) { margin-inline: 24px; opacity: .45; }
+.alert b { font-weight: 500; }
+.alert span { margin-left: auto; color: var(--ink-2); font: 400 12px var(--font-mono); white-space: nowrap; }
+.alert .ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: color-mix(in oklab, var(--action) 12%, var(--card)); color: var(--link); flex: none; }
+.alert .ic svg { width: 16px; height: 16px; }
+.funnel { display: grid; gap: 8px; }
+.funnel div { display: grid; grid-template-columns: 72px 1fr 52px; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.funnel i { height: 24px; border-radius: 6px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); position: relative; overflow: hidden; }
+.funnel i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--ink); border-radius: 6px; }
+.funnel div:last-child i::after { background: var(--action); }
+.funnel b { font-weight: 500; color: var(--ink); text-align: right; }
+.pay { display: flex; gap: 8px; flex-wrap: wrap; }
+.pay span { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding-inline: 14px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); font-size: 14px; font-weight: 500; }
+.pay span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+.files { display: grid; gap: 8px; font: 400 13px var(--font-mono); }
+.files div { display: flex; justify-content: space-between; gap: 12px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 10px 14px; }
+.files span { color: var(--ink-2); }
+
+/* ---------- pricing ---------- */
+.price-head { display: flex; align-items: end; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+.billing { display: inline-flex; align-items: center; gap: 12px; font-size: 15px; }
+.billing label { color: var(--ink-2); cursor: pointer; }
+.switch { position: relative; width: 52px; height: 44px; border: 0; padding: 0; background: transparent; }
+.switch::before { content: ""; position: absolute; left: 2px; top: 8px; width: 48px; height: 28px; border-radius: 999px; background: var(--hairline-2); transition: background-color 150ms var(--ease); }
+.switch::after { content: ""; position: absolute; left: 6px; top: 12px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: translate 200ms var(--ease); }
+.switch[aria-checked="true"]::before { background: var(--action); }
+.switch[aria-checked="true"]::after { translate: 20px 0; }
+.save { display: inline-flex; align-items: center; height: 24px; padding-inline: 8px; border-radius: 6px; background: var(--tag); color: var(--tag-ink); font-size: 13px; font-weight: 500; }
+.tiers { margin-top: 48px; display: grid; grid-template-columns: 1fr 1.08fr 1fr; gap: 16px; align-items: start; }
+.tier { border-radius: 24px; background: var(--shell); padding: 8px; }
+.tier-top { padding: 16px 16px 20px; }
+.tier-top h3 { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 500; letter-spacing: -0.02em; }
+.tier-top p { margin-top: 4px; font-size: 14px; color: var(--ink-2); }
+.tier-in { border-radius: 18px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); padding: 24px; }
+.amount { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.amount strong { font: 400 48px/1 var(--font-display); letter-spacing: -0.02em; }
+.amount s { font-size: 18px; color: var(--ink-2); }
+.amount span { font-size: 15px; color: var(--ink-2); }
+.billed { margin-top: 8px; font-size: 13px; color: var(--ink-2); min-height: 20px; }
+.tier .btn { margin-top: 20px; }
+.checks { margin-top: 20px; display: grid; gap: 10px; font-size: 14px; }
+.checks li { display: flex; gap: 10px; align-items: flex-start; }
+.checks svg { width: 18px; height: 18px; color: var(--action); flex: none; margin-top: 1px; }
+.tier.featured { background: var(--feature); color: var(--feature-ink); }
+.tier.featured .tier-top p, .tier.featured .amount span, .tier.featured .amount s, .tier.featured .billed { color: var(--feature-ink-2); }
+.tier.featured .tier-in { background: var(--feature-inner); box-shadow: inset 0 1px 0 rgb(255 255 255 / .07), inset 0 0 0 1px rgb(255 255 255 / .06); }
+.tier.featured .checks svg { color: #4ea4ff; }
+.included { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--hairline); }
+.included li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; font-size: 14px; border-bottom: 1px solid var(--hairline); }
+.included li:not(:nth-child(3n)) { border-right: 1px solid var(--hairline); }
+.included svg { width: 16px; height: 16px; color: var(--ink-2); }
+.foot-note { margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-2); }
+
+/* ---------- comparison table ---------- */
+.scroll-hint { display: none; margin-top: 16px; font-size: 14px; color: var(--ink-2); }
+.table-shell { margin-top: 48px; border-radius: 24px; background: var(--shell); padding: 8px; }
+.table-scroll { position: relative; border-radius: 18px; background: var(--card); border: 1px solid var(--hairline); overflow-x: auto; }
+table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px; }
+caption { text-align: left; }
+th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--hairline); vertical-align: middle; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+thead th { font-weight: 500; font-size: 14px; }
+thead th.hot { color: var(--link); }
+tbody th { font-weight: 400; color: var(--ink-2); width: 30%; }
+td.hot { background: color-mix(in oklab, var(--action) 4%, transparent); }
+thead th.hot { background: color-mix(in oklab, var(--action) 4%, transparent); }
+tbody th, thead th:first-child { position: sticky; left: 0; background: var(--card); z-index: 1; }
+.yes, .no { display: inline-flex; width: 20px; height: 20px; }
+.yes svg { width: 20px; height: 20px; color: var(--good); }
+.no svg { width: 16px; height: 16px; margin: 2px; color: var(--ink-3); }
+
+/* ---------- calculator ---------- */
+.calc { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.calc-in { border-radius: 24px; background: var(--shell); padding: 32px; display: grid; gap: 28px; align-content: start; }
+.field label { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-weight: 500; }
+.field output { font: 400 15px var(--font-mono); color: var(--ink); }
+.field p { margin-top: 4px; font-size: 13px; color: var(--ink-2); }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin-top: 0; background: transparent; accent-color: var(--action); }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(var(--action), var(--action)) 0 / var(--p, 50%) 100% no-repeat, var(--hairline-2); } /* slop-ok: two-stop fill of the range track, not a background */
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -10px; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline-2), 0 0 0 4px var(--canvas); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--hairline-2); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--action); }
+input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: 0; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline-2); }
+.result { border-radius: 24px; background: var(--feature); color: var(--feature-ink); padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+.result h3 { font-size: 15px; font-weight: 500; color: var(--feature-ink-2); }
+.result strong { font: 400 64px/1 var(--font-display); letter-spacing: -0.03em; }
+.result .sub { font-size: 15px; color: var(--feature-ink-2); max-width: 40ch; }
+.result .sub b { color: var(--feature-ink); font-weight: 500; }
+.cmp { display: grid; gap: 10px; margin-top: 8px; }
+.result .note { margin-top: auto; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / .1); font-size: 13px; color: var(--feature-ink-2); }
+.cmp div { display: grid; grid-template-columns: 96px 1fr 76px; align-items: center; gap: 12px; font-size: 13px; color: var(--feature-ink-2); }
+.cmp i { height: 8px; border-radius: 4px; background: rgb(255 255 255 / .1); overflow: hidden; }
+.cmp i b { display: block; height: 100%; width: var(--w); border-radius: 4px; background: rgb(237 237 237); transition: width 300ms var(--ease); }
+.cmp div:last-child i b { background: #4ea4ff; }
+.cmp span { text-align: right; color: var(--feature-ink); font: 400 13px var(--font-mono); }
+
+/* ---------- add-ons ---------- */
+.addons { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.addon { position: relative; border-radius: 24px; background: var(--shell); padding: 28px; min-height: 220px; display: flex; flex-direction: column; transition: background-color 150ms var(--ease); }
+.addon:hover { background: color-mix(in oklab, var(--shell) 70%, var(--hairline)); }
+.addon > svg { width: 24px; height: 24px; color: var(--link); }
+.addon p { margin-top: 24px; font: 400 22px/1.3 var(--font-display); letter-spacing: -0.01em; max-width: 26ch; }
+.addon p b { color: var(--link); font-weight: 400; }
+.addon .cost { margin-top: auto; padding-top: 28px; font: 400 26px/1 var(--font-display); }
+.addon .cost small { display: block; margin-top: 6px; font: 400 13px var(--font-ui); color: var(--ink-2); }
+.addon a { position: absolute; right: 24px; bottom: 24px; width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--ink); }
+.addon a::before { content: ""; position: absolute; inset: -176px -24px -24px -600px; } /* the whole card is the hit area */
+.addon a svg { width: 16px; height: 16px; }
+
+/* ---------- FAQ ---------- */
+.faq { margin: 48px auto 0; max-width: 720px; border-radius: 24px; background: var(--shell); padding: 8px; }
+.faq details { border-radius: 18px; transition: background-color 150ms var(--ease); }
+.faq details + details { border-top: 1px solid var(--hairline); }
+.faq details[open] { background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); border-top-color: transparent; }
+.faq details[open] + details { border-top-color: transparent; }
+.faq summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 16px 20px; font-size: 16px; font-weight: 500; cursor: pointer; border-radius: 18px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary svg { width: 16px; height: 16px; color: var(--ink-2); transition: rotate 200ms var(--ease); flex: none; }
+.faq details[open] summary svg { rotate: 180deg; }
+.faq .ans { padding: 0 20px 20px; color: var(--ink-2); font-size: 15px; line-height: 1.6; }
+.faq .ans a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--hairline-2); text-underline-offset: 4px; }
+.faq .ans a:hover { text-decoration-color: currentColor; }
+
+/* ---------- closing ---------- */
+.close { padding-block: 128px 0; text-align: center; }
+.close h2 { font: 400 56px/1.05 var(--font-display); letter-spacing: -0.03em; max-width: 20ch; margin-inline: auto; }
+.close h2 span { color: var(--ink-2); }
+
+/* ---------- footer ---------- */
+footer { margin-top: 128px; border-top: 1px solid var(--hairline); }
+.foot { padding-block: 56px 0; display: grid; grid-template-columns: 1fr auto; gap: 48px; }
+.foot .about p { margin-top: 16px; max-width: 34ch; font-size: 14px; color: var(--ink-2); }
+.social { margin-top: 20px; display: flex; gap: 4px; margin-left: -10px; }
+.social a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms var(--ease), color 150ms var(--ease); }
+.social a:hover { background: var(--shell); color: var(--ink); }
+.cols { display: grid; grid-template-columns: repeat(4, auto); gap: 56px; font-size: 14px; }
+.cols h3 { font-size: 14px; font-weight: 500; }
+.cols ul { margin-top: 12px; display: grid; gap: 4px; }
+.cols a { display: inline-flex; min-height: 28px; align-items: center; color: var(--ink-2); transition: color 150ms var(--ease); }
+.cols a:hover { color: var(--ink); }
+#hills { display: block; width: 100%; height: 260px; margin-top: 24px; }
+.legal { display: flex; justify-content: space-between; gap: 16px; padding-block: 20px; font-size: 13px; color: var(--ink-2); }
+.legal ul { display: flex; gap: 20px; }
+.legal a:hover { color: var(--ink); }
+
+/* ---------- motion ---------- */
+@keyframes rise { from { opacity: 0; translate: 0 14px; } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; } .hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 380ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- mobile ---------- */
+@media (max-width: 960px) {
+  .links { display: none; }
+  .nav-r { margin-left: auto; }
+  .board-in { grid-template-columns: 1fr; }
+  .split { grid-template-columns: 1fr; gap: 40px; }
+  .tiers { grid-template-columns: 1fr; max-width: 520px; margin-inline: auto; }
+  .tier.featured { order: -1; }
+  .included { grid-template-columns: 1fr 1fr; }
+  .included li:not(:nth-child(3n)) { border-right: 0; }
+  .included li:nth-child(odd) { border-right: 1px solid var(--hairline); }
+  .calc { grid-template-columns: 1fr; }
+  .bento { grid-template-columns: 1fr 1fr; }
+  .cell.w3, .cell.w2, .cell.w4 { grid-column: span 2; }
+  .foot { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .nav-r .login { display: none; }
+  .hero { padding-top: 56px; }
+  .hero h1 { font-size: 44px; }
+  .hero .lead { font-size: 18px; }
+  .capture { height: auto; flex-wrap: wrap; border-radius: 20px; padding: 8px; }
+  .capture svg { margin-left: 8px; }
+  .capture input { height: 44px; }
+  .capture .btn { width: 100%; }
+  .board { margin-top: 48px; }
+  .board-in { padding: 16px; }
+  .board-top { flex-wrap: wrap; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; height: 44px; }
+  .chart { height: 160px; }
+  .sec { padding-top: 96px; }
+  .sec-head { font-size: 36px; }
+  .scroll-hint { display: block; }
+  .scroll-hint + .table-shell { margin-top: 16px; }
+  .sec-lead { font-size: 17px; }
+  .journey { padding: 12px; }
+  .journey-in { padding: 16px; }
+  .step { grid-template-columns: 32px 1fr; }
+  .step time { grid-column: 2; }
+  .logo-row { gap: 16px 28px; }
+  .wm { font-size: 17px; }
+  .band-in { padding-block: 72px 80px; }
+  .band h2 { font-size: 24px; }
+  .verbs a { width: 96px; }
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .cell.w3, .cell.w2, .cell.w4 { grid-column: auto; min-height: 0; }
+  .included { grid-template-columns: 1fr; }
+  .included li:nth-child(odd) { border-right: 0; }
+  .calc-in, .result { padding: 24px; }
+  .result strong { font-size: 52px; }
+  .addons { grid-template-columns: 1fr; }
+  .addon p { font-size: 20px; }
+  .close h2 { font-size: 40px; }
+  .cols { grid-template-columns: 1fr 1fr; gap: 32px; }
+  #hills { height: 160px; }
+  .legal { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="wrap nav">
+  <a class="logo" href="#main" aria-label="Sumlight home">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="11" width="4" height="7" rx="1" fill="currentColor" opacity=".35"/><rect x="8" y="6" width="4" height="12" rx="1" fill="currentColor" opacity=".65"/><rect x="14" y="2" width="4" height="16" rx="1" fill="var(--action)"/></svg>
+    Sumlight
+  </a>
+  <nav class="links" aria-label="Main">
+    <a href="#attribution">Attribution</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#compare">Compare plans</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="nav-r">
+    <button class="theme" type="button" id="theme" aria-label="Dark mode" aria-pressed="false">
+      <svg class="icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    </button>
+    <a class="login" href="#signin">Log in</a>
+    <a class="btn ink" href="#start">Start free</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ======================= hero + tabbed board ======================= -->
+  <section class="wrap hero" aria-labelledby="hero-title">
+    <h1 id="hero-title">See which post <span>paid the rent.</span></h1>
+    <p class="lead">Add one script tag. Sumlight follows each visit to the signup and the payment, so <b>$4,180 from a Tuesday thread</b> shows up as exactly that.</p>
+    <form class="capture" id="start" action="#" onsubmit="return false">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <label class="sr" for="site">Your website</label>
+      <input id="site" type="url" inputmode="url" autocomplete="url" placeholder="yourwebsite.com…" spellcheck="false">
+      <button class="btn primary" type="submit">Add my website</button>
+    </form>
+    <p class="fine">Free for 14 days, then <b>$14/month</b>. No card required.</p>
+
+    <div class="board" aria-label="Sumlight revenue dashboard">
+      <div class="board-in">
+        <div>
+          <div class="board-top">
+            <div><h2>Revenue by first touch</h2><p>makerlog.app</p></div>
+            <div class="seg" role="tablist" aria-label="Date range">
+              <button role="tab" id="r7" aria-selected="false" aria-controls="range-panel" tabindex="-1" data-r="7">7 days</button>
+              <button role="tab" id="r30" aria-selected="true" aria-controls="range-panel" data-r="30">30 days</button>
+              <button role="tab" id="r90" aria-selected="false" aria-controls="range-panel" tabindex="-1" data-r="90">90 days</button>
+            </div>
+          </div>
+          <div id="range-panel" role="tabpanel" aria-labelledby="r30">
+            <div class="big"><strong class="num" id="total">$12,840</strong><span class="num" id="delta">+18% vs previous</span></div>
+            <svg class="chart" id="chart" viewBox="0 0 640 200" preserveAspectRatio="none" role="img" aria-label="Daily revenue">
+              <g class="grid"><line x1="0" x2="640" y1="40" y2="40"/><line x1="0" x2="640" y1="100" y2="100"/><line x1="0" x2="640" y1="160" y2="160"/></g>
+              <path class="area" id="area" d=""/>
+              <path class="line" id="line" d=""/>
+            </svg>
+          </div>
+        </div>
+        <div class="sources">
+          <h3>Top sources</h3>
+          <ul id="sources"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= feature split ======================= -->
+  <section class="wrap sec" id="attribution" aria-labelledby="attr-title">
+    <h2 class="sec-head center" id="attr-title">Whatever brought them in, <span>you'll see it.</span></h2>
+    <div class="split">
+      <div class="copy">
+        <span class="tag"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l3-8 3 16 3-8h3"/></svg>Journeys</span>
+        <h3>Every sale, traced to its first click.</h3>
+        <p>A customer reads a thread, comes back from a newsletter, then pays on a Sunday. Sumlight joins all three visits to the one payment.</p>
+        <figure class="quote">
+          <div class="who">
+            <span class="av" style="background:#b4541a" aria-hidden="true">PR</span>
+            <div><b>Priya Raman</b><small>Founder, Inkwell Forms</small></div>
+          </div>
+          <blockquote>“Cut two ad channels in a week. The thread I almost didn't post was paying for both of them, according to <span class="handle">@sumlight</span>.”</blockquote>
+        </figure>
+      </div>
+      <div class="journey">
+        <div class="journey-in">
+          <div class="j-head"><b>Customer #2,184</b><span>3 visits · 6 days</span></div>
+          <ol class="steps" style="list-style:none;padding:0;margin:0">
+            <li class="step">
+              <span class="dotc"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></span>
+              <div><b>Read a thread on launch pricing</b><p>Referrer: social post, 41 seconds</p></div>
+              <time datetime="2026-11-02T09:14">Mon 09:14</time>
+            </li>
+            <li class="step">
+              <span class="dotc"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <div><b>Clicked the Thursday newsletter</b><p>Visited pricing and docs, 4 pages</p></div>
+              <time datetime="2026-11-05T18:02">Thu 18:02</time>
+            </li>
+            <li class="step">
+              <span class="dotc"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg></span>
+              <div><b>Paid for the yearly plan</b><p class="paid num">$140.00</p></div>
+              <time datetime="2026-11-08T11:47">Sun 11:47</time>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= logos + dark band ======================= -->
+  <section class="wrap logos" aria-label="Teams using Sumlight">
+    <p>Counting revenue for 3,400 small teams, including</p>
+    <div class="logo-row">
+      <span class="wm a"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="currentColor"/></svg>Northpine</span>
+      <span class="wm b">Halcyon Press</span>
+      <span class="wm c">FIELDNOTE</span>
+      <span class="wm d">tinyqueue</span>
+      <span class="wm e"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 16 10 3l8 13z" fill="currentColor"/></svg>Ridgeway</span>
+      <span class="wm a">Paperkite</span>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="band-title">
+    <div class="band-top" aria-hidden="true"></div>
+    <div class="wrap band-in">
+      <h2 id="band-title">Sumlight doesn't stop at counting. <span>It's for every decision after.</span></h2>
+      <div class="verbs">
+        <a href="#attribution"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Track</a>
+        <a href="#attribution"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 9a9 9 0 0 1-9 9"/></svg>Attribute</a>
+        <a href="#compare"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v18M16 3v18M3 8h5M16 16h5M3 16h5M16 8h5"/></svg>Compare</a>
+        <a href="#addons"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>Alert</a>
+        <a href="#faq"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Export</a>
+      </div>
+    </div>
+    <div class="band-bottom" aria-hidden="true"></div>
+  </section>
+
+  <!-- ======================= bento ======================= -->
+  <section class="wrap sec" style="padding-top:88px" aria-labelledby="bento-title">
+    <h2 class="sec-head" id="bento-title">Small script. <span>Every number you'd ask for.</span></h2>
+    <div class="bento">
+      <article class="cell w4">
+        <div><h3>One line, any stack</h3><p>Paste it in your head tag. No cookies, no banner, 1.1&nbsp;KB on the wire.</p></div>
+        <div class="art code" aria-label="Install snippet">
+          <b>&lt;script</b> <i>defer</i> src=<b>"https://cdn.sumlight.dev/s.js"</b><br>
+          &nbsp;&nbsp;<i>data-site</i>=<b>"makerlog.app"</b><b>&gt;&lt;/script&gt;</b>
+        </div>
+      </article>
+      <article class="cell w2">
+        <div><h3>Alerts that mean money</h3><p>Pinged when a source starts paying.</p></div>
+        <div class="art alerts">
+          <div class="alert"><span class="ic"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16 10 10l4 4 6-6"/></svg></span><b>Newsletter +$620</b><span>2m</span></div>
+          <div class="alert" aria-hidden="true"><span class="ic"><svg class="icon" viewBox="0 0 24 24"><path d="M4 16 10 10l4 4 6-6"/></svg></span><b>Docs page +$140</b><span>1h</span></div>
+          <div class="alert" aria-hidden="true"><span class="ic"><svg class="icon" viewBox="0 0 24 24"><path d="M4 16 10 10l4 4 6-6"/></svg></span><b>Podcast +$98</b><span>3h</span></div>
+        </div>
+      </article>
+      <article class="cell w2">
+        <div><h3>Funnels to the payment</h3><p>Where the 2% go missing.</p></div>
+        <div class="art funnel">
+          <div>Visit<i style="--w:100%"></i><b class="num">18,402</b></div>
+          <div>Signup<i style="--w:38%"></i><b class="num">1,206</b></div>
+          <div>Trial<i style="--w:22%"></i><b class="num">604</b></div>
+          <div>Paid<i style="--w:9%"></i><b class="num">212</b></div>
+        </div>
+      </article>
+      <article class="cell w2">
+        <div><h3>Reads your billing</h3><p>Connect a provider once; refunds come off automatically.</p></div>
+        <div class="art pay"><span style="--c:#0f766e">Cardstream</span><span style="--c:#e8a33d">Lemonpay</span><span style="--c:#1e7f4f">Paddock</span></div>
+      </article>
+      <article class="cell w2">
+        <div><h3>Your data, your files</h3><p>Export any view as CSV, or pull it with the API.</p></div>
+        <div class="art files"><div>revenue_30d.csv<span>48 KB</span></div><div>journeys.json<span>212 KB</span></div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= pricing ======================= -->
+  <section class="wrap sec" id="pricing" aria-labelledby="price-title">
+    <div class="price-head">
+      <h2 class="sec-head" id="price-title">Start free. <span>Pay when it pays.</span></h2>
+      <div class="billing">
+        <label for="bill" id="bill-label">Bill yearly</label>
+        <button class="switch" type="button" role="switch" id="bill" aria-checked="false" aria-labelledby="bill-label"></button>
+        <span class="save">2 months free</span>
+      </div>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <div class="tier-top"><h3>Hobby</h3><p>One site, the essentials.</p></div>
+        <div class="tier-in">
+          <div class="amount"><strong class="num">$0</strong><span>/month</span></div>
+          <p class="billed">Free while you're under 1,000 visits.</p>
+          <a class="btn ghost block" href="#start">Start on Hobby</a>
+          <ul class="checks">
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>1 website, 1,000 visits a month</li>
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Revenue by first touch</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tier featured">
+        <div class="tier-top"><h3>Pro <span class="save">Most chosen</span></h3><p>Everything a solo founder needs.</p></div>
+        <div class="tier-in">
+          <div class="amount"><strong class="num" data-m="$14" data-y="$11.67">$14</strong><s class="num" data-y-strike="$14" hidden>$14</s><span>/month</span></div>
+          <p class="billed num" data-m="Billed monthly. Switch to yearly anytime." data-y="Billed $140 once a year.">Billed monthly. Switch to yearly anytime.</p>
+          <a class="btn primary block" href="#start">Start 14-day trial</a>
+          <ul class="checks">
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>5 websites, 100k visits a month</li>
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Full journeys and funnels</li>
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Revenue alerts and API</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="tier-top"><h3>Team</h3><p>For teams that split the work.</p></div>
+        <div class="tier-in">
+          <div class="amount"><strong class="num" data-m="$39" data-y="$32.50">$39</strong><s class="num" data-y-strike="$39" hidden>$39</s><span>/month</span></div>
+          <p class="billed num" data-m="Billed monthly, 5 seats included." data-y="Billed $390 once a year, 5 seats.">Billed monthly, 5 seats included.</p>
+          <a class="btn ghost block" href="#start">Start 14-day trial</a>
+          <ul class="checks">
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Unlimited websites, 1M visits</li>
+            <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Shared views and roles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <ul class="included" aria-label="Included in every paid plan">
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l3-8 3 16 3-8h3"/></svg>Journeys</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 9v6l-4 2v-8z"/></svg>Funnels</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Goals</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg>Revenue alerts</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>REST API</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>CSV export</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>No cookies</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18"/></svg>Custom domain</li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Two years of history</li>
+    </ul>
+    <p class="foot-note">Prices in USD. Cancel from your settings in two clicks. <a class="link" href="#start">Prefer to start free?</a></p>
+  </section>
+
+  <!-- ======================= comparison table ======================= -->
+  <section class="wrap sec" id="compare" aria-labelledby="compare-title">
+    <h2 class="sec-head" id="compare-title">Every plan, side by side. <span>No small print.</span></h2>
+    <p class="scroll-hint">Swipe the table sideways to see Pro and Team.</p>
+    <div class="table-shell">
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="compare-title">
+        <table>
+          <caption class="sr">Sumlight plans compared</caption>
+          <thead><tr><th scope="col"><span class="sr">Feature</span></th><th scope="col">Hobby</th><th scope="col" class="hot">Pro</th><th scope="col">Team</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Price</th><td class="num">$0</td><td class="num hot">$14 a month</td><td class="num">$39 a month</td></tr>
+            <tr><th scope="row">Websites</th><td>1</td><td class="hot">5</td><td>Unlimited</td></tr>
+            <tr><th scope="row">Visits a month</th><td class="num">1,000</td><td class="num hot">100,000</td><td class="num">1,000,000</td></tr>
+            <tr><th scope="row">Revenue by first touch</th><td><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td><td class="hot"><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td><td><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td></tr>
+            <tr><th scope="row">Full journeys and funnels</th><td><span class="no"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr">Not included</span></span></td><td class="hot"><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td><td><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td></tr>
+            <tr><th scope="row">Revenue alerts</th><td><span class="no"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr">Not included</span></span></td><td class="hot"><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td><td><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td></tr>
+            <tr><th scope="row">Data kept</th><td>6 months</td><td class="hot">2 years</td><td>5 years</td></tr>
+            <tr><th scope="row">Seats</th><td>1</td><td class="hot">1</td><td>5, then $6 each</td></tr>
+            <tr><th scope="row">Shared views and roles</th><td><span class="no"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr">Not included</span></span></td><td class="hot"><span class="no"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr">Not included</span></span></td><td><span class="yes"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="sr">Included</span></span></td></tr>
+            <tr><th scope="row">Support</th><td>Docs</td><td class="hot">Email, 1 day</td><td>Email, same day</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= calculator ======================= -->
+  <section class="wrap sec" id="calculator" aria-labelledby="calc-title">
+    <h2 class="sec-head" id="calc-title">What a wrong guess costs. <span>Run your own numbers.</span></h2>
+    <div class="calc">
+      <form class="calc-in" id="calc" onsubmit="return false">
+        <div class="field">
+          <label for="visits">Visits a month <output for="visits" id="o-visits" class="num">20,000</output></label>
+          <input id="visits" type="range" min="1000" max="200000" step="1000" value="20000">
+        </div>
+        <div class="field">
+          <label for="conv">Visits that end in a sale <output for="conv" id="o-conv" class="num">1.2%</output></label>
+          <input id="conv" type="range" min="0.2" max="5" step="0.1" value="1.2">
+        </div>
+        <div class="field">
+          <label for="price">Average first payment <output for="price" id="o-price" class="num">$29</output></label>
+          <input id="price" type="range" min="5" max="300" step="1" value="29">
+        </div>
+        <div class="field">
+          <label for="shift">Effort moved from your weakest source <output for="shift" id="o-shift" class="num">20%</output></label>
+          <input id="shift" type="range" min="0" max="60" step="5" value="20">
+          <p>Your best source usually converts about 3 times better than your weakest.</p>
+        </div>
+      </form>
+      <div class="result">
+        <h3>Extra revenue a month</h3>
+        <strong class="num" id="gain" aria-live="polite">+$2,784</strong>
+        <p class="sub">From <b class="num" id="now">$6,960</b> to <b class="num" id="then">$9,744</b> a month, with the same traffic.</p>
+        <div class="cmp" aria-hidden="true">
+          <div>Today<i><b id="bar-now" style="--w:70%"></b></i><span class="num" id="cmp-now">$6,960</span></div>
+          <div>After moving<i><b id="bar-then" style="--w:98%"></b></i><span class="num" id="cmp-then">$9,744</span></div>
+        </div>
+        <p class="note">An estimate, not a promise: it assumes moved visits convert three times better and half of the moved effort lands. Your dashboard shows the real ratio after a week.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= add-ons ======================= -->
+  <section class="wrap sec" id="addons" aria-labelledby="addon-title">
+    <h2 class="sec-head" id="addon-title">Go further when you need to. <span>Each add-on, one price.</span></h2>
+    <div class="addons">
+      <article class="addon">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <p><b>Weekly digest.</b> The five sources that paid, in your inbox every Monday.</p>
+        <div class="cost num">$4<small>per month</small></div>
+        <a href="#start" aria-label="Add the weekly digest"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </article>
+      <article class="addon">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM4 9h16M9 20V9"/></svg>
+        <p><b>Data warehouse sync.</b> Every event, nightly, into your own database.</p>
+        <div class="cost num">$19<small>per month</small></div>
+        <a href="#start" aria-label="Add warehouse sync"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </article>
+      <article class="addon">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <p><b>Setup review.</b> We check your goals and funnels on a 30-minute call.</p>
+        <div class="cost num">$49<small>one time</small></div>
+        <a href="#start" aria-label="Book a setup review"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </article>
+      <article class="addon">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg>
+        <p><b>History import.</b> Two years of past payments matched to their sources.</p>
+        <div class="cost num">$99<small>one time</small></div>
+        <a href="#start" aria-label="Order a history import"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= FAQ ======================= -->
+  <section class="wrap sec" id="faq" aria-labelledby="faq-title">
+    <h2 class="sec-head center" id="faq-title">Questions, answered.</h2>
+    <div class="faq">
+      <details open>
+        <summary>How do I install Sumlight?<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="ans">Add the script to your site's head tag. Page views are recorded on their own, and you can send your own events from the browser. Setup walks you through each step.<br><a href="#start">Read the install guide</a></div>
+      </details>
+      <details>
+        <summary>Does Sumlight use cookies?<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="ans">No. Visits are joined with a daily salted hash that can't be traced back to a person, so you don't need a consent banner for Sumlight.</div>
+      </details>
+      <details>
+        <summary>How does revenue tracking work?<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="ans">Connect your billing provider once. Each payment is matched to the visit that started the session, and refunds are taken off automatically.</div>
+      </details>
+      <details>
+        <summary>Can I track more than one website?<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="ans">Pro covers five websites and Team covers as many as you like. Each site gets its own dashboard and its own share link.</div>
+      </details>
+      <details>
+        <summary>Can I export my data?<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="ans">Any view exports as CSV in one click, and the REST API returns the same numbers. If you leave, you take everything with you.</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ======================= closing ======================= -->
+  <section class="wrap close" aria-labelledby="close-title">
+    <h2 id="close-title">Add one script tag tonight. <span>Know by Friday.</span></h2>
+    <p class="fine" style="margin-top:24px">Free for 14 days, then <b>$14/month</b>.</p>
+    <a class="btn primary" href="#start" style="margin-top:24px">Add my website</a>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="about">
+      <a class="logo" href="#main" aria-label="Sumlight home">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="11" width="4" height="7" rx="1" fill="currentColor" opacity=".35"/><rect x="8" y="6" width="4" height="12" rx="1" fill="currentColor" opacity=".65"/><rect x="14" y="2" width="4" height="16" rx="1" fill="var(--action)"/></svg>
+        Sumlight
+      </a>
+      <p>Revenue analytics for small software teams. Made by four people in Pune and Porto.</p>
+      <div class="social">
+        <a href="#rss" aria-label="Changelog feed"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19a1 1 0 1 0 0-.01M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/></svg></a>
+        <a href="#code" aria-label="Source code"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></a>
+        <a href="#mail" aria-label="Email us"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+      </div>
+    </div>
+    <div class="cols">
+      <div><h3>Product</h3><ul><li><a href="#attribution">Journeys</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#addons">Add-ons</a></li><li><a href="#calculator">Calculator</a></li></ul></div>
+      <div><h3>Compare</h3><ul><li><a href="#compare">Plans</a></li><li><a href="#compare">Pageview tools</a></li><li><a href="#compare">Spreadsheets</a></li></ul></div>
+      <div><h3>Resources</h3><ul><li><a href="#docs">Docs</a></li><li><a href="#api">API</a></li><li><a href="#status">Status</a></li></ul></div>
+      <div><h3>Company</h3><ul><li><a href="#about">About</a></li><li><a href="#contact">Contact</a></li><li><a href="#jobs">Jobs</a></li></ul></div>
+    </div>
+  </div>
+  <canvas id="hills" aria-hidden="true"></canvas>
+  <div class="wrap legal">
+    <span>© 2026 Sumlight</span>
+    <ul><li><a href="#privacy">Privacy</a></li><li><a href="#terms">Terms</a></li><li><a href="#refunds">Refunds</a></li><li><a href="#licence">Licence</a></li></ul>
+  </div>
+</footer>
+
+<script>
+/* ---------- theme toggle: aria-pressed button, remembered per browser ---------- */
+const root = document.documentElement, themeBtn = document.getElementById("theme");
+const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+const syncTheme = () => { themeBtn.setAttribute("aria-pressed", String(isDark())); drawHills(); };
+themeBtn.addEventListener("click", () => {
+  root.dataset.theme = isDark() ? "light" : "dark";
+  try { localStorage.setItem("sumlight-theme", root.dataset.theme); } catch (e) {}
+  syncTheme();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme);
+
+/* ---------- tabs: roving tabindex, arrows, Home/End ---------- */
+const DATA = {
+  7:  { total: "$3,120", delta: "+6% vs previous", pts: [30, 34, 31, 44, 40, 52, 49], src: [["Social thread", 1240], ["Newsletter", 860], ["Search", 610], ["Docs", 410]] },
+  30: { total: "$12,840", delta: "+18% vs previous", pts: [22, 26, 24, 30, 28, 35, 33, 31, 38, 42, 40, 39, 46, 44, 50, 47, 52, 58, 55, 54, 61, 59, 64, 62, 70, 66, 72, 75, 71, 78], src: [["Social thread", 4180], ["Newsletter", 3260], ["Search", 2650], ["Docs", 1540]] },
+  90: { total: "$34,610", delta: "+41% vs previous", pts: [12, 14, 13, 18, 17, 20, 24, 22, 27, 30, 29, 34, 33, 38, 41, 40, 46, 44, 50, 55, 53, 58, 62, 61, 67, 70, 74, 72, 79, 84], src: [["Newsletter", 11920], ["Social thread", 10280], ["Search", 7690], ["Docs", 4720]] },
+};
+const ICON = { "Social thread": "M4 5h16v11H8l-4 4z", "Newsletter": "M3 5h18v14H3zM3 7l9 6 9-6", "Search": "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4", "Docs": "M6 3h9l3 3v15H6zM9 12h6M9 16h6" };
+const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+function render(r) {
+  const d = DATA[r];
+  document.getElementById("total").textContent = d.total;
+  document.getElementById("delta").textContent = d.delta;
+  const n = d.pts.length, max = 90, X = (i) => (i / (n - 1)) * 640, Y = (v) => 190 - (v / max) * 170;
+  let p = `M0 ${Y(d.pts[0])}`;
+  for (let i = 1; i < n; i++) { const x0 = X(i - 1), x1 = X(i), cx = (x0 + x1) / 2; p += ` C${cx} ${Y(d.pts[i - 1])} ${cx} ${Y(d.pts[i])} ${x1} ${Y(d.pts[i])}`; }
+  document.getElementById("line").setAttribute("d", p);
+  document.getElementById("area").setAttribute("d", p + " L640 200 L0 200 Z");
+  const top = d.src[0][1];
+  document.getElementById("sources").innerHTML = d.src.map(([name, v]) =>
+    `<li><svg class="icon src" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[name]}"/></svg><span>${name}</span><b class="num" style="font-weight:500">${money(v)}</b><span class="bar" aria-hidden="true"><i style="width:${Math.round((v / top) * 100)}%"></i></span></li>`).join("");
+}
+const tabs = [...document.querySelectorAll('[role="tab"]')], panel = document.getElementById("range-panel");
+function select(t, focus) {
+  tabs.forEach((x) => { const on = x === t; x.setAttribute("aria-selected", String(on)); x.tabIndex = on ? 0 : -1; });
+  panel.setAttribute("aria-labelledby", t.id);
+  render(t.dataset.r);
+  if (focus) t.focus();
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => select(t, false));
+  t.addEventListener("keydown", (e) => {
+    const k = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+    if (k === undefined) return;
+    e.preventDefault(); select(tabs[(k + tabs.length) % tabs.length], true);
+  });
+});
+render(30);
+
+/* ---------- billing switch: role=switch, Space and Enter toggle natively on a <button> ---------- */
+const bill = document.getElementById("bill");
+document.getElementById("bill-label").addEventListener("click", () => bill.click());
+bill.addEventListener("click", () => {
+  const y = bill.getAttribute("aria-checked") !== "true";
+  bill.setAttribute("aria-checked", String(y));
+  document.querySelectorAll(".amount strong[data-m]").forEach((el) => { el.textContent = y ? el.dataset.y : el.dataset.m; });
+  document.querySelectorAll(".amount s").forEach((el) => { el.hidden = !y; });
+  document.querySelectorAll(".billed[data-m]").forEach((el) => { el.textContent = y ? el.dataset.y : el.dataset.m; });
+});
+
+/* ---------- calculator: native ranges, outputs, one polite live region ---------- */
+const $ = (id) => document.getElementById(id);
+const calc = () => {
+  const v = +$("visits").value, c = +$("conv").value / 100, p = +$("price").value, s = +$("shift").value / 100;
+  const now = v * c * p, then = now * (1 + s * (3 - 1) * 0.5); /* moved visits convert ~3x; half the shifted effort lands */
+  $("o-visits").textContent = v.toLocaleString("en-US");
+  $("o-conv").textContent = (+$("conv").value).toFixed(1) + "%";
+  $("o-price").textContent = "$" + p;
+  $("o-shift").textContent = Math.round(s * 100) + "%";
+  $("gain").textContent = "+" + money(then - now);
+  $("now").textContent = $("cmp-now").textContent = money(now);
+  $("then").textContent = $("cmp-then").textContent = money(then);
+  $("bar-now").style.setProperty("--w", Math.round((now / then) * 100) + "%");
+  $("bar-then").style.setProperty("--w", "100%");
+  document.querySelectorAll('#calc input[type="range"]').forEach((r) => r.style.setProperty("--p", ((r.value - r.min) / (r.max - r.min)) * 100 + "%"));
+};
+$("calc").addEventListener("input", calc); calc();
+
+/* ---------- footer: dotted hills, drawn once per size and theme ---------- */
+function drawHills() {
+  const c = document.getElementById("hills"); if (!c) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = c.clientWidth, h = c.clientHeight;
+  c.width = w * dpr; c.height = h * dpr;
+  const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const rgb = getComputedStyle(root).getPropertyValue("--dot").trim();
+  const peaks = [[0.12, 0.42, 0.14], [0.46, 0.92, 0.2], [0.7, 0.5, 0.11], [0.98, 0.6, 0.12]];
+  const ridge = (x) => Math.max(...peaks.map(([px, ph, pw]) => ph * Math.exp(-(((x / w) - px) ** 2) / (2 * pw * pw))));
+  const step = w < 600 ? 9 : 11;
+  for (let y = step / 2; y < h; y += step) for (let x = step / 2; x < w; x += step) {
+    const top = h - ridge(x) * h; if (y < top) continue;
+    const depth = Math.min(1, (y - top) / (h * 0.55)), fade = 1 - (y / h) * 0.55;
+    const r = 0.6 + (1 - depth) * 1.6;
+    g.fillStyle = `rgb(${rgb} / ${(0.12 + (1 - depth) * 0.3) * fade})`;
+    g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+  }
+}
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(drawHills, 150); });
+syncTheme();
+</script>
+</body>
+</html>

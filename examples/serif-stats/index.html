@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Launchyard — list your product, get found</title>
+<style>
+/* slop-ok: overused-font, Newsreader chosen for this look; principles.md says what to use when the user has not decided */
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-italic.woff2) format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #ffffff;
+  --surface: #f4f4f6;
+  --ink: #0f0f12;
+  --ink-2: color-mix(in oklab, var(--ink) 62%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 48%, var(--canvas));
+  --dim: #7b7b80;
+  --hairline: color-mix(in oklab, var(--ink) 9%, transparent);
+  --accent: #1d4ed8;
+  --accent-soft: #e8eeff;
+  --brand: #f0532d;
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, p { margin: 0; }
+h1, h2 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.site-header { position: sticky; top: 0; z-index: 50; background: color-mix(in oklab, var(--canvas) 72%, transparent); backdrop-filter: saturate(150%) blur(8px); }
+.nav { max-width: 1200px; height: 64px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 40px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 600 16px/1 var(--font-ui); letter-spacing: -0.01em; }
+.logo svg { width: 20px; height: 20px; }
+.links { display: flex; gap: 28px; font: 400 14px/1 var(--font-ui); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--ink-2); }
+.icon-btn svg { width: 18px; height: 18px; }
+.soft-pill { height: 36px; padding-inline: 16px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font: 500 14px/36px var(--font-ui); }
+.me { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #d8d2c8, #8a8072); }
+
+.hero { max-width: 1040px; margin-inline: auto; padding: 120px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.badge { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 4px; border-radius: 999px; font: 400 13px/1 var(--font-ui); color: var(--ink-2); box-shadow: 0 0 0 1px var(--hairline); transition: color 150ms var(--ease); }
+.badge:hover { color: var(--ink); }
+.badge b { height: 22px; padding-inline: 8px; border-radius: 999px; background: var(--accent); color: #fff; font: 600 12px/22px var(--font-ui); }
+.badge svg { width: 12px; height: 12px; }
+h1 { margin-top: 24px; font: 400 clamp(2.75rem, 6vw, 4.5rem)/1.04 var(--font-display); letter-spacing: -0.025em; }
+h1 em { font-style: italic; }
+h1 .dim { display: block; color: var(--dim); }
+.lead { margin-top: 24px; max-width: 36rem; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+.actions { margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.pill { display: inline-flex; align-items: center; height: 44px; padding-inline: 20px; border-radius: 999px; font: 500 15px/1 var(--font-ui); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.pill:active { transform: scale(.97); }
+.pill-primary { background: var(--accent); color: #fff; }
+.pill-primary:hover { background: #1e40af; }
+.pill-quiet { background: var(--surface); color: var(--ink); }
+.pill-quiet:hover { background: #eaeaee; }
+
+.stats { width: min(1040px, 100%); margin: 56px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: left; }
+.stat { background: var(--surface); border-radius: 18px; padding: 24px; }
+.stat .k { display: flex; align-items: center; gap: 8px; font: 500 14px/1 var(--font-ui); color: var(--ink-2); }
+.stat .k svg { width: 16px; height: 16px; }
+.stat .v { margin-top: 28px; font: 400 52px/1 var(--font-display); letter-spacing: -0.02em; }
+.stat .c { margin-top: 12px; font: 400 13px/1.4 var(--font-ui); color: var(--ink-3); }
+
+.section { max-width: 1040px; margin-inline: auto; padding: 120px var(--gutter) 120px; }
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+h2 { font: 400 clamp(2.25rem, 4.4vw, 3.5rem)/1.05 var(--font-display); letter-spacing: -0.025em; }
+.section-head p { max-width: 22rem; color: var(--ink-2); font-size: 15px; }
+
+.board { margin-top: 40px; border-radius: 20px; box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -32px rgb(15 15 30 / .22); overflow: hidden; }
+.board-top { display: flex; align-items: center; gap: 24px; padding: 0 24px; height: 64px; border-bottom: 1px solid var(--hairline); }
+.tabs { display: flex; gap: 24px; height: 100%; font: 500 14px/1 var(--font-ui); color: var(--ink-3); }
+.tabs span { display: flex; align-items: center; height: 100%; }
+.tabs .on { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+.timer { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.timer .lbl { display: flex; align-items: center; gap: 6px; font: 500 12px/1 var(--font-ui); color: var(--ink-3); }
+.timer .lbl i { width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
+.clock { display: flex; align-items: center; gap: 4px; font: 500 18px/1 var(--font-mono); }
+.clock span { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 28px; }
+.clock small { font: 500 12px/1 var(--font-ui); color: var(--ink-3); letter-spacing: 0.04em; }
+.clock .sep { color: var(--ink-3); padding-bottom: 12px; }
+
+.rows { margin: 0; padding: 8px; list-style: none; }
+.rows li { display: grid; grid-template-columns: 28px 48px 1fr auto; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 12px; }
+.rows li:hover { background: #fafafb; }
+.rank { font: 400 22px/1 var(--font-display); color: var(--ink-3); text-align: center; }
+.app { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; color: #fff; font: 500 22px/1 var(--font-display); }
+.what b { display: block; font: 600 15px/1.3 var(--font-ui); }
+.what span { font: 400 14px/1.4 var(--font-ui); color: var(--ink-2); }
+.what .tags { display: flex; gap: 6px; margin-top: 6px; }
+.what .tags i { font: 500 12px/1 var(--font-ui); font-style: normal; color: var(--ink-2); padding: 4px 8px; border-radius: 6px; background: var(--surface); }
+.vote { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 56px; height: 56px; border-radius: 12px; box-shadow: 0 0 0 1px var(--hairline); font: 600 14px/1 var(--font-ui); }
+.vote svg { width: 14px; height: 14px; }
+.rows li.first .vote { box-shadow: 0 0 0 1.5px var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 300ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 809px) {
+  .links, .icon-btn { display: none; }
+  .hero { padding-top: 64px; }
+  .actions { width: 100%; flex-direction: column; } .pill { justify-content: center; }
+  .stats { grid-template-columns: 1fr; margin-top: 40px; }
+  .stat .v { margin-top: 20px; font-size: 44px; }
+  .section { padding-block: 80px; }
+  .section-head { flex-direction: column; align-items: start; }
+  .board-top { flex-wrap: wrap; height: auto; padding-block: 16px; gap: 16px; }
+  .timer { margin-left: 0; }
+  .rows li { grid-template-columns: 40px 1fr auto; padding: 12px 8px; }
+  .rank { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h5v13h9v5H5z" fill="#f0532d"/></svg>Launchyard</a>
+    <div class="links"><a href="#">Launches</a><a href="#">Categories</a><a href="#">Newsletter</a><a href="#">Pricing</a></div>
+    <div class="nav-right">
+      <a class="icon-btn" href="#" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="soft-pill" href="#">Submit product</a>
+      <span class="me" aria-hidden="true"></span>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <a class="badge" href="#"><b>New</b>Weekly featured slots from $19<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <h1>Get listed <em>today.</em> <span class="dim">Get found all year.</span></h1>
+    <p class="lead">Every product gets a permanent page on Launchyard. Featured launches sit at the top of the home page for a week, go out in the Friday newsletter and earn a dofollow link from a DR&nbsp;71 site.</p>
+    <div class="actions"><a class="pill pill-primary" href="#">Submit your product</a><a class="pill pill-quiet" href="#">Compare plans</a></div>
+    <div class="stats">
+      <div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg>Domain rating</div><div class="v num">DR 71</div><div class="c">The site your dofollow link comes from.</div></div>
+      <div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 4a4 4 0 0 1 0 8M22 21c0-3-2-6-5-6.5"/></svg>Monthly visitors</div><div class="v num">18,400</div><div class="c">Measured by Plausible, last 30 days.</div></div>
+      <div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Newsletter readers</div><div class="v num">9,200</div><div class="c">Subscribers to the Friday issue.</div></div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="this-week">
+    <div class="section-head">
+      <h2 id="this-week">This week on the yard.</h2>
+      <p>Launches reset every Monday at 00:00 UTC. The top three keep a winner badge on their page for good.</p>
+    </div>
+    <div class="board">
+      <div class="board-top">
+        <div class="tabs"><span class="on">This week</span><span>Last week</span><span>All time</span></div>
+        <div class="timer"><span class="lbl"><i></i>Next launch in</span>
+          <div class="clock num"><span>02<small>DAYS</small></span><span class="sep">:</span><span>11<small>HRS</small></span><span class="sep">:</span><span>36<small>MIN</small></span><span class="sep">:</span><span>08<small>SEC</small></span></div>
+        </div>
+      </div>
+      <ol class="rows">
+        <li class="first"><span class="rank">1</span><span class="app" style="background:#0f766e">T</span><span class="what"><b>Tidepool</b><span>Shared inbox for support teams under ten people</span><span class="tags"><i>Productivity</i><i>SaaS</i></span></span><span class="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg><span class="num">412</span></span></li>
+        <li><span class="rank">2</span><span class="app" style="background:#b45309">Q</span><span class="what"><b>Quillmark</b><span>Turns your changelog into a monthly email in one click</span><span class="tags"><i>Marketing</i></span></span><span class="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg><span class="num">367</span></span></li>
+        <li><span class="rank">3</span><span class="app" style="background:#1e293b">K</span><span class="what"><b>Keystone CI</b><span>Build caches that survive across branches</span><span class="tags"><i>Developer tools</i></span></span><span class="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg><span class="num">298</span></span></li>
+        <li><span class="rank">4</span><span class="app" style="background:#be123c">F</span><span class="what"><b>Fernleaf</b><span>Plant-care reminders that read your local weather</span><span class="tags"><i>Consumer</i></span></span><span class="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg><span class="num">241</span></span></li>
+      </ol>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1b1b1b">
+<title>Wayline — the travel infrastructure built for agents</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --sky: #a9dcf5;
+  --ink: #1b1b1b;
+  --ink-2: rgb(27 27 27 / .82);
+  --paper: #fafafa;
+  --hairline: rgb(27 27 27 / .12);
+  --coral: #ff7f7a;
+  --coral-light: #ffb2a6;
+  --bar: #1b1b1b;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--sky); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--coral-light); }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* ---------- announcement bar ---------- */
+.bar { min-height: 36px; padding-block: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; padding-inline: 48px; background: var(--bar); color: #f3f3f3; font: 400 13px/1.2 var(--font-mono); text-align: center; position: relative; }
+.bar a { text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+.bar button { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 28px; height: 28px; display: grid; place-items: center; border: 0; background: none; color: #f3f3f3; cursor: pointer; border-radius: 4px; }
+.bar button:hover { background: rgb(255 255 255 / .1); }
+.bar svg { width: 14px; height: 14px; }
+
+/* ---------- atmosphere: a coastal scene that breaks into pixels at the bottom edge ---------- */
+.hero { position: relative; isolation: isolate; min-height: max(760px, calc(100svh - 36px)); }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+
+/* ---------- nav: logo tile left, white box of mono links right ---------- */
+.nav { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px var(--gutter) 0; }
+.mark { width: 44px; height: 44px; border-radius: 8px; background: var(--ink); display: grid; place-items: center; }
+.mark i { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff1ec, var(--coral) 75%); }
+.menu { display: flex; align-items: center; gap: 4px; padding: 8px 8px 8px 20px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--hairline); font: 500 14px/1 var(--font-mono); text-transform: uppercase; }
+.menu a { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding-inline: 12px; transition: background-color 150ms var(--ease); }
+.menu a:hover { background: rgb(27 27 27 / .05); }
+.menu svg { width: 10px; height: 10px; }
+.menu .sign { background: linear-gradient(90deg, var(--coral), var(--coral-light)); padding-inline: 16px; }
+.menu .sign:hover { background: linear-gradient(90deg, #ff6f69, #ffa597); }
+
+/* ---------- copy ---------- */
+.copy { max-width: 1280px; margin-inline: auto; padding: 88px var(--gutter) 0; display: flex; flex-direction: column; align-items: flex-start; }
+.copy > * { margin-left: 40px; }
+h1 { font: 500 clamp(2.75rem, 4.6vw, 4.25rem)/1.04 var(--font-ui); letter-spacing: -0.035em; max-width: 13em; }
+.lead { margin-top: 28px; max-width: 40ch; font: 400 18px/1.7 var(--font-mono); color: var(--ink-2); }
+.ctas { margin-top: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; height: 48px; padding-inline: 16px; font: 500 15px/1 var(--font-mono); text-transform: uppercase; box-shadow: inset 0 0 0 1px var(--hairline);
+  transition: filter 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.go { background: linear-gradient(90deg, var(--coral), var(--coral-light)); }
+.btn.go:hover { filter: brightness(1.04); }
+.btn.docs { background: var(--paper); color: #1c4a6e; }
+.btn.docs:hover { background: #fff; }
+.api { margin-top: 32px; display: inline-flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--hairline); font: 400 13px/1.4 var(--font-mono); }
+.api b { color: #a3352f; font-weight: 500; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 680ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; } .copy > :nth-child(4) { animation-delay: 220ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .bar { justify-content: flex-start; padding-left: var(--gutter); font-size: 12px; }
+  .menu a:not(.sign) { display: none; }
+  .menu { padding: 6px; }
+  .copy { padding-top: 48px; }
+  .copy > * { margin-left: 0; }
+  .ctas { width: 100%; }
+  .btn { flex: 1; justify-content: center; }
+  .api { display: none; }
+  .hero { min-height: max(780px, calc(100svh - 52px)); }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="bar" role="region" aria-label="Announcement">/ Wayline now books rail in 14 countries. <a href="#">Read the changelog</a><button type="button" aria-label="Dismiss announcement"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m3 3 8 8M11 3l-8 8"/></svg></button></div>
+<main id="main">
+  <section class="hero" aria-labelledby="h">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <nav class="nav" aria-label="Main">
+      <a class="mark" href="#" aria-label="Wayline home"><i></i></a>
+      <div class="menu">
+        <a href="#">Solutions<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m2 3.5 3 3 3-3"/></svg></a>
+        <a href="#">Products<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m2 3.5 3 3 3-3"/></svg></a>
+        <a href="#">Pricing</a><a href="#">Log in</a><a class="sign" href="#">Sign up</a>
+      </div>
+    </nav>
+    <div class="copy">
+      <h1 id="h">The travel infrastructure built for agents</h1>
+      <p class="lead">One integration lets your agent search, book and change flights, hotels and car rentals, with real inventory and real tickets.</p>
+      <div class="ctas"><a class="btn go" href="#">Start building</a><a class="btn docs" href="#">Explore docs</a></div>
+      <p class="api"><b>POST</b>/v2/trips/search &nbsp;→&nbsp; 312 offers in 840 ms</p>
+    </div>
+  </section>
+</main>
+<script>
+// A drawn coastal scene (sky, sea, dunes, two boards in the sand), then a pixel dissolve:
+// the bottom band and a scatter of sky pixels are re-sampled into square blocks with coral accents.
+(() => {
+  const c = document.getElementById("scene"), ctx = c.getContext("2d");
+  function rnd(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+  function paint(g, w, h, mob) {
+    const sky = g.createLinearGradient(0, 0, 0, h * .7); sky.addColorStop(0, "#7fcdf2"); sky.addColorStop(.6, "#bfe6f7"); sky.addColorStop(1, "#e9f4f6");
+    g.fillStyle = sky; g.fillRect(0, 0, w, h);
+    g.fillStyle = "rgba(255,255,255,.5)"; [[.62, .12, 180], [.8, .22, 120], [.45, .28, 90]].forEach(([x, y, s]) => { g.beginPath(); g.ellipse(w * x, h * y, s, s * .22, 0, 0, 7); g.fill(); });
+    const horizon = h * (mob ? .7 : .7);
+    g.fillStyle = "#6fb2c9"; g.fillRect(0, horizon - 14, w, 16);
+    g.fillStyle = "#e3d2b6"; g.beginPath(); g.moveTo(0, horizon + 30); g.bezierCurveTo(w * .25, horizon - 30, w * .55, horizon + 10, w, horizon - 20); g.lineTo(w, h); g.lineTo(0, h); g.fill();
+    g.fillStyle = "#c9a984"; g.beginPath(); g.moveTo(0, h * .86); g.bezierCurveTo(w * .3, h * .76, w * .6, h * .9, w, h * .8); g.lineTo(w, h); g.lineTo(0, h); g.fill();
+    const r = rnd(3); g.lineWidth = 2;
+    for (let i = 0; i < (mob ? 140 : 420); i++) { const x = r() * w, y = horizon + 20 + r() * (h - horizon); g.strokeStyle = r() < .5 ? "rgba(140,110,70,.7)" : "rgba(170,150,100,.6)"; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + (r() - .5) * 14, y - 20, x + (r() - .5) * 26, y - 30 - r() * 30); g.stroke(); }
+    const board = (x, y, bw, bh, rot, col, stripe) => { g.save(); g.translate(x, y); g.rotate(rot); g.fillStyle = col; g.beginPath(); g.ellipse(0, 0, bw, bh, 0, 0, 7); g.fill(); g.strokeStyle = stripe; g.lineWidth = 3; g.beginPath(); g.moveTo(0, -bh * .92); g.lineTo(0, bh * .92); g.stroke(); g.restore(); };
+    const bx = mob ? w * .72 : w * .64;
+    board(bx, horizon - 30, mob ? 26 : 40, mob ? 120 : 190, -0.16, "#5f7f63", "rgba(255,255,255,.5)");
+    board(bx + (mob ? 70 : 130), horizon - 10, mob ? 24 : 38, mob ? 110 : 175, 0.12, "#f4efe6", "#1b1b1b");
+  }
+  function draw() {
+    const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2), mob = w < 900;
+    c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const off = document.createElement("canvas"); off.width = w; off.height = h; const g = off.getContext("2d");
+    paint(g, w, h, mob); ctx.drawImage(off, 0, 0);
+    const data = g.getImageData(0, 0, w, h).data, b = mob ? 14 : 20, r = rnd(9);
+    for (let y = 0; y < h; y += b) for (let x = 0; x < w; x += b) {
+      const t = y / h, bottom = t > .74 ? Math.pow((t - .74) / .26, .8) : 0, edge = x < w * .06 || x > w * .94 ? .05 : 0;
+      const p = bottom * .9 + edge + (t < .7 ? .012 : 0); if (r() > p) continue;
+      const i = ((Math.min(h - 1, y + b / 2) | 0) * w + (Math.min(w - 1, x + b / 2) | 0)) * 4, j = (r() - .5) * 36;
+      if (t < .7) { ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.fillRect(x, y, b, b); continue; }
+      ctx.fillStyle = r() < .04 ? "#ff6f6a" : `rgb(${data[i] + j},${data[i + 1] + j},${data[i + 2] + j})`; ctx.fillRect(x, y, b, b);
+      if (r() < .08) { ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.fillRect(x + b * .25, y + b * .25, b * .5, b * .5); }
+    }
+  }
+  draw();
+  let t; addEventListener("resize", () => { cancelAnimationFrame(t); t = requestAnimationFrame(draw); });
+})();
+</script>
+</body>
+</html>

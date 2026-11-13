@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f2ec">
+<title>Folio — the connected canvas for teams shipping with agents</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-300-normal.woff2) format("woff2"); font-weight: 300; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --paper: #f4f2ec;
+  --paper-2: #fbfaf6;
+  --fold: #e7e3d5;
+  --ink: #161614;
+  --ink-2: color-mix(in oklab, var(--ink) 58%, var(--paper));
+  --ink-3: color-mix(in oklab, var(--ink) 44%, var(--paper));
+  --hairline: rgb(22 22 20 / .12);
+  --line: rgb(22 22 20 / .16);
+  --accent: #5b8def;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 80px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--paper); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.55 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: #d6e2fb; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- atmosphere: paper grain across the page, a lifted corner with a ruler ---------- */
+.grain { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: .5; }
+.corner { position: absolute; right: 0; top: 64px; width: min(460px, 34vw); height: 540px; z-index: -1; pointer-events: none; }
+
+/* ---------- nav ---------- */
+.nav { position: sticky; top: 0; z-index: 10; height: 64px; padding-inline: var(--gutter); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: rgb(244 242 236 / .86); backdrop-filter: blur(8px); }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 500 22px/1 var(--font-ui); letter-spacing: -0.03em; }
+.logo svg { width: 22px; height: 22px; }
+.links { display: flex; gap: 36px; font-size: 18px; color: #4a4a46; }
+.links a:hover { color: var(--ink); }
+.sign { justify-self: end; font-size: 18px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; padding: 56px var(--gutter) 0; }
+h1 { font: 400 clamp(2.75rem, 4.4vw, 3.75rem)/1.06 var(--font-ui); letter-spacing: -0.035em; max-width: 24ch; }
+h1 span { display: block; }
+h1 span { color: #74746d; }
+.lead { margin-top: 20px; max-width: 46ch; font-size: 19px; line-height: 1.6; color: #6a6a64; }
+.ctas { margin-top: 36px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; height: 44px; padding-inline: 16px; border-radius: 3px; background: var(--ink); color: #fff; font-size: 18px; transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:hover { background: #33332f; }
+.btn:active { transform: scale(.98); }
+.text-link { font-size: 18px; color: #6a6a64; transition: color 150ms var(--ease); }
+.text-link:hover { color: var(--ink); }
+
+/* ---------- app window ---------- */
+.win { margin-top: 64px; border-radius: 12px; overflow: hidden; background: #f7f7f5; box-shadow: 0 0 0 1px var(--hairline), 0 1px 0 rgb(255 255 255 / .8) inset, 0 24px 48px -32px rgb(40 36 20 / .35); font-size: 13px; }
+.tabs { height: 40px; display: flex; align-items: center; gap: 2px; padding-inline: 16px; background: #efefec; border-bottom: 1px solid var(--hairline); color: #6b6b66; }
+.tl { display: flex; gap: 8px; margin-right: 16px; } .tl i { width: 12px; height: 12px; border-radius: 50%; background: #d8d8d4; }
+.tab { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding-inline: 12px; border-radius: 6px; white-space: nowrap; }
+.tab svg { width: 12px; height: 12px; }
+.tab[aria-current] { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px var(--hairline); }
+.wbody { display: grid; grid-template-columns: 240px 44px 1fr 260px; height: 440px; }
+.pages { padding: 14px 12px; border-right: 1px solid var(--hairline); background: #fafaf8; }
+.ph { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; padding: 0 4px 12px; }
+.sec { display: flex; justify-content: space-between; padding: 8px 4px; color: #6b6b66; }
+.pg { display: flex; align-items: center; gap: 8px; height: 28px; padding-inline: 8px; border-radius: 6px; color: #3e3e3a; }
+.pg svg { width: 12px; height: 12px; color: #8a8a84; }
+.pg[aria-current] { background: #ececE8; }
+.pg span { margin-left: auto; font: 400 12px/1 var(--font-mono); color: #6f6f68; }
+.toolcol { border-right: 1px solid var(--hairline); display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 10px; background: #fafaf8; }
+.toolcol span { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; color: #5a5a55; }
+.toolcol span[aria-current] { background: #e7ecfb; color: #2f5fd0; }
+.toolcol svg { width: 16px; height: 16px; }
+.canvas { position: relative; background: #ededea; padding: 28px; overflow: hidden; }
+.dotsrow { display: flex; gap: 4px; margin-bottom: 8px; } .dotsrow i { width: 3px; height: 3px; border-radius: 50%; background: #7da2f0; }
+.board { background: #fff; border-radius: 8px; box-shadow: 0 0 0 1px #9fb9f2; padding: 16px 18px; height: 100%; }
+.bh { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+.bh svg { width: 16px; height: 16px; }
+.nav2 { display: flex; gap: 6px; margin-left: 8px; } .nav2 i { width: 26px; height: 26px; border-radius: 6px; background: #ececea; display: grid; place-items: center; color: #555; font-style: normal; font-size: 12px; }
+.bsearch { margin-left: auto; width: 180px; height: 30px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--hairline); display: flex; align-items: center; gap: 6px; padding-inline: 10px; color: #8a8a84; font-weight: 400; font-size: 12px; }
+.bsearch svg { width: 12px; height: 12px; }
+.tracks { margin-top: 14px; display: grid; gap: 2px; }
+.tr { display: grid; grid-template-columns: 24px 1fr auto auto; gap: 12px; align-items: center; height: 40px; padding-inline: 8px; border-radius: 6px; font-size: 13px; }
+.tr:nth-child(2) { background: #f3f6fe; }
+.tr i { font-style: normal; color: #6f6f68; font: 400 12px/1 var(--font-mono); }
+.tr small { color: #6f6f68; font-size: 12px; }
+.tr em { font-style: normal; font: 400 12px/1 var(--font-mono); color: #8a8a84; }
+.props { padding: 12px; border-left: 1px solid var(--hairline); background: #fafaf8; }
+.ppl { display: flex; justify-content: space-between; align-items: center; }
+.avs { display: flex; } .avs i { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 2px #fafaf8; margin-left: -6px; } .avs i:first-child { margin-left: 0; }
+.ppl span { font: 400 12px/1 var(--font-mono); color: #6b6b66; }
+.copylink { margin-top: 10px; height: 32px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--hairline); display: flex; align-items: center; justify-content: center; gap: 6px; background: #fff; }
+.copylink kbd { font: 400 12px/1 var(--font-mono); color: #8a8a84; }
+.prow { margin-top: 18px; display: flex; justify-content: space-between; color: #3e3e3a; font-weight: 500; }
+.field { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.field span { height: 28px; border-radius: 6px; background: #f0f0ed; display: flex; align-items: center; justify-content: space-between; padding-inline: 8px; font: 400 12px/1 var(--font-mono); color: #5a5a55; }
+
+/* ---------- section two: the hairline grid with square handles ---------- */
+.grid2 { position: relative; margin: 120px var(--gutter) 0; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); background: rgb(251 250 246 / .7); }
+.cell { padding: 48px 44px 96px; }
+.cell + .cell { border-left: 1px solid var(--line); }
+.cell h3 { font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+.cell p { margin-top: 12px; color: #7a7a74; font-size: 18px; max-width: 34ch; }
+.wide { position: relative; grid-column: 1 / -1; border-top: 1px solid var(--line); padding: 112px 44px 80px; overflow: hidden; }
+.wide .k { font-size: 18px; color: var(--ink); }
+.wide h2 { margin-top: 40px; font: 400 clamp(2.25rem, 3.6vw, 3rem)/1.08 var(--font-ui); letter-spacing: -0.03em; max-width: 20ch; }
+.wide p { margin-top: 28px; max-width: 46ch; font-size: 18px; color: #7a7a74; }
+.stair { position: absolute; right: 0; top: 0; width: 392px; height: 392px; pointer-events: none; }
+/* signature: small square handles where hairlines meet, like a selected frame on a canvas */
+.h { position: absolute; width: 11px; height: 11px; background: var(--paper-2); box-shadow: 0 0 0 1px var(--line); translate: -50% -50%; }
+.end { height: 96px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; } .hero > .win { animation-delay: 260ms; animation-duration: 900ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 999px) {
+  .wbody { grid-template-columns: 1fr; }
+  .pages, .toolcol, .props { display: none; }
+  .tab:nth-child(n+4) { display: none; }
+}
+@media (max-width: 760px) {
+  .links { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .corner { display: none; }
+  h1 { font-size: 36px; }
+  .ctas { gap: 20px; }
+  .bsearch, .nav2 { display: none; }
+  .tr em { display: none; }
+  .grid2 { grid-template-columns: 1fr; margin-top: 80px; }
+  .cell + .cell { border-left: 0; border-top: 1px solid var(--line); }
+  .cell { padding: 32px 24px 48px; }
+  .wide { padding: 64px 24px 56px; }
+  .stair { width: 200px; height: 200px; opacity: .6; }
+  .h.mid { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<svg class="grain" aria-hidden="true"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="8"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .28  0 0 0 0 .2  0 0 0 .16 0"/></filter><rect width="100%" height="100%" filter="url(#g)"/></svg>
+<nav class="nav" aria-label="Main">
+  <a class="logo" href="#"><svg viewBox="0 0 22 22"><rect x="1" y="1" width="12" height="12" fill="#5b8def"/><rect x="9" y="9" width="12" height="12" fill="#a9c2f5"/><rect x="9" y="9" width="4" height="4" fill="#3b6fd8"/></svg>Folio</a>
+  <div class="links"><a href="#">pricing</a><a href="#">roadmap</a><a href="#">blog</a><a href="#">changelog</a><a href="#">docs</a></div>
+  <a class="sign" href="#">sign up</a>
+</nav>
+<main id="main">
+  <svg class="corner" viewBox="0 0 460 640" preserveAspectRatio="xMaxYMin meet" aria-hidden="true">
+    <defs><pattern id="sq" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0v40" fill="none" stroke="rgb(22 22 20 / .1)"/></pattern></defs>
+    <path d="M460 0V640H0Z" fill="#e7e3d5"/><path d="M460 0V640H0Z" fill="url(#sq)"/>
+    <path d="M460 0 0 640" stroke="rgb(22 22 20 / .14)"/>
+    <g stroke="rgb(22 22 20 / .3)">
+      <path d="M460 40h-10M460 80h-16M460 120h-10M460 160h-16M460 200h-10M460 240h-16M460 280h-10M460 320h-16M460 360h-10M460 400h-16M460 440h-10M460 480h-16M460 520h-10M460 560h-16M460 600h-10"/>
+    </g>
+  </svg>
+
+  <section class="hero" aria-labelledby="h">
+    <h1 id="h">design incredible <span>the connected canvas for teams shipping with agents</span></h1>
+    <p class="lead">Folio puts your team, your agents, your code and your data on one design surface built on web standards, so nothing gets lost between them</p>
+    <div class="ctas"><a class="btn" href="#">download Folio</a><a class="text-link" href="#">open Folio in the browser <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-1px"><path d="M2 7h10M8 3l4 4-4 4"/></svg></a></div>
+
+    <div class="win" aria-label="Folio app preview">
+      <div class="tabs">
+        <span class="tl" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="tab"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="1.5" width="4" height="4"/><rect x="7.5" y="1.5" width="4" height="4"/><rect x="1.5" y="7.5" width="4" height="4"/><rect x="7.5" y="7.5" width="4" height="4"/></svg>Dashboard</span>
+        <span class="tab"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Log in page</span>
+        <span class="tab" aria-current="page"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>UI v2 <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="m4 4 5 5M9 4 4 9"/></svg></span>
+        <span class="tab"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Brand</span>
+        <span class="tab"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Marketing</span>
+      </div>
+      <div class="wbody">
+        <aside class="pages">
+          <div class="ph">UI v2<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#6b6b66" stroke-width="1.2"><rect x="1.5" y="2.5" width="11" height="9" rx="1"/><path d="M5 2.5v9"/></svg></div>
+          <div class="sec"><span>Pages</span><span>+</span></div>
+          <a class="pg" href="#"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>UI</a>
+          <a class="pg" href="#" aria-current="page"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Desktop<span>4</span></a>
+          <a class="pg" href="#"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Mobile<span>6</span></a>
+          <a class="pg" href="#"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1.5h5l2.5 2.5v7.5H3z"/></svg>Components<span>32</span></a>
+          <div class="sec" style="margin-top:12px"><span>Layers</span></div>
+          <a class="pg" href="#"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="1.5" width="10" height="10"/></svg>Tracklist</a>
+          <a class="pg" href="#"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 3h9M2 6.5h9M2 10h6"/></svg>Header</a>
+        </aside>
+        <div class="toolcol" aria-hidden="true">
+          <span aria-current="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3 2l10 5-4.5 1.5L7 13z"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 8V4a1 1 0 0 1 2 0v3V3a1 1 0 0 1 2 0v4V4a1 1 0 0 1 2 0v5c0 3-2 5-4 5s-3-1-4-3L2 8a1 1 0 0 1 1.6-1.2z"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 1v14M12 1v14M1 4h14M1 12h14"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3h10M8 3v10"/></svg></span>
+        </div>
+        <div class="canvas">
+          <div class="dotsrow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="board">
+            <div class="bh"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9a5 5 0 0 1 10 0v3h-2.5V9M3 9v3h2.5V9"/></svg>Lowtide<span class="nav2"><i>‹</i><i>›</i></span><span class="bsearch"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="5.5" cy="5.5" r="3.5"/><path d="m8.5 8.5 3 3"/></svg>Search tracks</span></div>
+            <div class="tracks">
+              <div class="tr"><i>01</i><span>Low Coast<br><small>Ama Sorensen</small></span><small>Harbor Lights</small><em>3:42</em></div>
+              <div class="tr"><i>02</i><span>Tidewater<br><small>Kofi Mensah</small></span><small>Harbor Lights</small><em>4:08</em></div>
+              <div class="tr"><i>03</i><span>Salt and Static<br><small>Ines Duarte</small></span><small>Field Notes</small><em>2:57</em></div>
+              <div class="tr"><i>04</i><span>Driftline<br><small>Ama Sorensen</small></span><small>Field Notes</small><em>5:11</em></div>
+            </div>
+          </div>
+        </div>
+        <aside class="props">
+          <div class="ppl"><span class="avs" aria-hidden="true"><i style="background:#e9b48a"></i><i style="background:#9bb3d6"></i><i style="background:#c9a0a0"></i><i style="background:#5b8def"></i></span><span>71%</span></div>
+          <div class="copylink">Copy link <kbd>⌘ L</kbd></div>
+          <div class="prow">Layout<span>⌄</span></div>
+          <div class="field"><span>W<b>720</b></span><span>H<b>Hug</b></span><span>Gap<b>2</b></span><span>Pad<b>16</b></span></div>
+          <div class="prow">Fill</div>
+          <div class="field"><span>#FFFFFF<b>100%</b></span><span>Radius<b>8</b></span></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2" aria-label="Features">
+    <span class="h" style="left:0;top:0" aria-hidden="true"></span><span class="h mid" style="left:50%;top:0" aria-hidden="true"></span><span class="h" style="left:100%;top:0" aria-hidden="true"></span>
+    <div class="cell"><h3>connect any agent to your canvas</h3><p>Point any IDE or CLI agent at a shared layer that goes from code to design and back again</p></div>
+    <div class="cell"><h3>design and code, one language</h3><p>The canvas is HTML and CSS, so a design exports as code and nothing gets lost in translation</p></div>
+    <div class="wide">
+      <span class="h" style="left:0;top:0" aria-hidden="true"></span><span class="h mid" style="left:50%;top:0" aria-hidden="true"></span><span class="h" style="left:100%;top:0" aria-hidden="true"></span>
+      <svg class="stair" viewBox="0 0 390 390" aria-hidden="true"><defs><pattern id="px" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M13 0H0v13" fill="none" stroke="rgb(22 22 20 / .14)"/></pattern><clipPath id="st"><path id="stp" d="M0 0h390v390"/></clipPath></defs><g id="stairs"></g></svg>
+      <p class="k">goodbye lorem ipsum</p>
+      <h2>connected to real content, real data, from anywhere</h2>
+      <p>Bring in content, databases and context from any app on your computer or the web, and design with the words and numbers that will ship</p>
+    </div>
+  </section>
+  <div class="end"></div>
+</main>
+<script>
+// The staircase of grid cells in the corner of the wide card: each row a few cells shorter than the last.
+(() => {
+  const g = document.getElementById("stairs"), ns = "http://www.w3.org/2000/svg", c = 13;
+  for (let r = 0; r < 30; r++) for (let k = r; k < 30; k++) {
+    const q = document.createElementNS(ns, "rect"); q.setAttribute("x", k * c); q.setAttribute("y", r * c); q.setAttribute("width", c); q.setAttribute("height", c);
+    q.setAttribute("fill", "none"); q.setAttribute("stroke", "rgba(22,22,20,.14)"); g.appendChild(q);
+  }
+})();
+</script>
+</body>
+</html>

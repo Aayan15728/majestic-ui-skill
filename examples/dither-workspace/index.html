@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0b0c">
+<title>Mason — sessions</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --shell: #0b0b0c;
+  --side: #0e0e10;
+  --glass: rgb(13 14 18 / .8);
+  --glass-2: rgb(255 255 255 / .06);
+  --line: rgb(255 255 255 / .1);
+  --line-2: rgb(255 255 255 / .18);
+  --ink: #ececee;
+  --ink-2: #b4b6bd;
+  --ink-3: #94969e;
+  --heat-0: #1a2740;
+  --heat-1: #24437a;
+  --heat-2: #2f5fb0;
+  --heat-3: #4f86e0;
+  --heat-4: #86b4ff;
+  --ok: #49c27d;
+  --down: #ff8a80;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 16px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+html { background: var(--shell); }
+body { margin: 0; color: var(--ink); font: 400 14px/1.45 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+a { color: inherit; text-decoration: none; }
+button, textarea { font: inherit; color: inherit; }
+button { border: 0; background: none; cursor: pointer; }
+::selection { background: rgb(79 134 224 / .5); }
+:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 8px; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: #fff; color: #0b0b0c; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; }
+svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.app { min-height: 100%; display: grid; grid-template-columns: 256px minmax(0, 1fr); }
+
+/* ---------- sessions rail ---------- */
+.rail { background: var(--side); border-right: 1px solid var(--line); padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; }
+.rail-head { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
+.rail-head h2 { font-size: 15px; font-weight: 600; }
+.rail-head div { display: flex; gap: 2px; }
+.icon { width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 8px; color: var(--ink-2); transition: background 150ms var(--ease), color 150ms var(--ease); }
+.icon:hover { background: var(--glass-2); color: var(--ink); }
+.new { display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding-inline: 10px; border-radius: 8px; font-weight: 500; text-align: left; transition: background 150ms var(--ease); }
+.new:hover { background: var(--glass-2); }
+.rail h3 { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; padding-inline: 10px; font-size: 13px; font-weight: 400; color: var(--ink-3); }
+.sessions a { display: block; padding: 8px 10px; border-radius: 8px; transition: background 150ms var(--ease); }
+.sessions a:hover, .sessions a[aria-current] { background: var(--glass-2); }
+.sessions b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sessions span { font-size: 13px; color: var(--ink-3); }
+.rail .done { margin-top: auto; display: flex; align-items: center; gap: 10px; min-height: 38px; padding-inline: 10px; border-radius: 8px; color: var(--ink-2); }
+.rail .done:hover { background: var(--glass-2); }
+
+/* ---------- main: dithered art behind glass ---------- */
+.main { position: relative; isolation: isolate; padding: 0 var(--gutter) 40px; display: flex; flex-direction: column; align-items: center; }
+#art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
+.col { width: min(880px, 100%); }
+.brand { margin-top: 148px; display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+.brand svg { width: 26px; height: 26px; }
+.glass { background: var(--glass); border: 1px solid var(--line); border-radius: 14px; backdrop-filter: blur(18px) saturate(1.2); }
+
+.composer { margin-top: 18px; padding: 16px 14px 10px 18px; }
+.composer textarea { display: block; width: 100%; height: 76px; resize: none; border: 0; background: none; outline: none; font-size: 16px; line-height: 1.5; }
+.composer textarea::placeholder { color: var(--ink-3); }
+.composer:focus-within { border-color: var(--line-2); }
+.c-bar { display: flex; align-items: center; gap: 4px; }
+.c-bar .mode { display: inline-flex; align-items: center; height: 32px; padding-inline: 10px; border-radius: 8px; font-weight: 500; color: var(--ink-2); transition: background 150ms var(--ease); }
+.c-bar .mode:hover { background: var(--glass-2); }
+.speed { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: rgb(255 255 255 / .05); }
+.speed button { height: 28px; padding-inline: 10px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--ink-3); transition: background 150ms var(--ease), color 150ms var(--ease); }
+.speed button[aria-pressed="true"] { background: rgb(255 255 255 / .12); color: var(--ink); }
+.send { width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 50%; background: #fff; color: #0b0b0c; transition: background 150ms var(--ease), transform 150ms var(--ease); }
+.send:hover { background: #dcdde2; }
+.send:active { transform: scale(.94); }
+.send[disabled] { background: rgb(255 255 255 / .14); color: var(--ink-3); cursor: default; }
+.hint { flex: 1; min-width: 0; padding-inline: 10px; font-size: 13px; color: var(--ink-3); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.grid { margin-top: 40px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+.card { padding: 14px 16px 16px; }
+.card h3 { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.activity { grid-column: span 7; }
+.recent { grid-column: span 5; }
+.usage { grid-column: span 3; }
+.prs { grid-column: span 6; }
+.month { grid-column: span 3; }
+.heat { margin-top: 14px; display: grid; grid-template-columns: repeat(26, 1fr); grid-auto-rows: 1fr; gap: 4px; }
+.heat i { aspect-ratio: 1; border-radius: 2px; background: var(--heat-0); }
+.heat i[data-l="1"] { background: var(--heat-1); } .heat i[data-l="2"] { background: var(--heat-2); } .heat i[data-l="3"] { background: var(--heat-3); } .heat i[data-l="4"] { background: var(--heat-4); }
+.card .meta { margin-top: 12px; display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.list { margin-top: 8px; }
+.list li { padding: 8px 0; }
+.list li + li { border-top: 1px solid rgb(255 255 255 / .06); }
+.list b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list span { font-size: 13px; color: var(--ink-3); }
+.more { display: inline-flex; align-items: center; min-height: 32px; margin-top: 2px; font-size: 13px; color: var(--ink-2); }
+.more:hover { color: var(--ink); }
+.big { margin-top: 18px; font: 500 28px/1 var(--font-ui); letter-spacing: -0.02em; }
+.big small { font-size: 14px; font-weight: 400; color: var(--ink-2); }
+.meter { margin-top: 14px; height: 4px; border-radius: 4px; background: rgb(255 255 255 / .1); overflow: hidden; }
+.meter b { display: block; width: 44%; height: 100%; background: var(--heat-3); }
+.card .sub { margin-top: 10px; font-size: 13px; color: var(--ink-3); }
+.pr { display: grid; grid-template-columns: 16px 1fr; gap: 10px; align-items: start; }
+.pr svg { margin-top: 2px; color: var(--ok); }
+.pr > div { min-width: 0; }
+.stat { margin-top: 14px; }
+.stat dt { font-size: 13px; color: var(--ink-3); }
+.stat dd { margin: 2px 0 0; display: flex; align-items: baseline; gap: 8px; font: 500 22px/1.2 var(--font-ui); color: var(--heat-4); }
+.stat dd small { font: 400 13px/1 var(--font-mono); }
+.up { color: var(--ok); } .dn { color: var(--down); }
+
+@keyframes rise { from { opacity: 0; translate: 0 10px; } }
+.col > * { animation: rise 560ms var(--ease) both; }
+.col > :nth-child(2) { animation-delay: 60ms; }
+.col > :nth-child(4) { animation-delay: 160ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 1100px) {
+  .activity, .recent, .prs { grid-column: span 12; }
+  .usage, .month { grid-column: span 6; }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { flex-direction: row; align-items: center; padding: 8px 10px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .rail-head { padding: 0 6px; flex: 1; }
+  .rail-head div, .rail h3, .sessions, .rail .done { display: none; }
+  .new { width: auto; height: 44px; padding-inline: 14px; border: 1px solid var(--line); }
+  .brand { margin-top: 56px; font-size: 24px; }
+  .icon, .send { width: 44px; height: 44px; }
+  .c-bar .mode { height: 44px; }
+  .speed button { height: 44px; }
+  .more { min-height: 44px; min-width: 44px; }
+  .c-bar .opt { display: none; }
+  .hint { visibility: hidden; }
+  .grid { margin-top: 28px; }
+  .usage, .month { grid-column: span 12; }
+  .heat { grid-template-columns: repeat(18, 1fr); }
+  .heat i:nth-child(n+127) { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to composer</a>
+<div class="app">
+  <aside class="rail" aria-label="Sessions">
+    <div class="rail-head">
+      <h2>Sessions</h2>
+      <div>
+        <button class="icon" type="button" aria-label="Inbox"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 9.5 3.6 3h8.8L14 9.5V13H2zM2 9.5h3.5l1 1.5h3l1-1.5H14"/></svg></button>
+        <button class="icon" type="button" aria-label="Hide sidebar"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 3v10"/></svg></button>
+      </div>
+    </div>
+    <button class="new" type="button" id="new"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>New session</button>
+    <h3><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>Recent</h3>
+    <ul class="sessions" id="sessions">
+      <li><a href="#" aria-current="page"><b>Port the tile renderer to WebGPU</b><span>8 days ago</span></a></li>
+      <li><a href="#"><b>Extract level data from the ROM dump</b><span>last month</span></a></li>
+      <li><a href="#"><b>Café sim: save and load</b><span>last month</span></a></li>
+      <li><a href="#"><b>Add lobby and matchmaking</b><span>last month</span></a></li>
+      <li><a href="#"><b>Fix controller dead zones</b><span>last month</span></a></li>
+    </ul>
+    <a class="done" href="#"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="m5.8 8.2 1.6 1.6 3-3.4"/></svg>Done</a>
+  </aside>
+
+  <main class="main" id="main">
+    <canvas id="art" aria-hidden="true"></canvas>
+    <div class="col">
+      <h1 class="brand"><svg viewBox="0 0 26 26" aria-hidden="true" fill="currentColor"><circle cx="7" cy="8" r="4"/><circle cx="18" cy="6" r="3"/><circle cx="13" cy="18" r="5"/><circle cx="22" cy="15" r="2.4"/></svg>Mason</h1>
+
+      <form class="glass composer" id="composer">
+        <label class="sr" for="ask">Describe the task</label>
+        <textarea id="ask" name="ask" placeholder="Ask Mason to add a feature, fix a bug or review a branch…" autocomplete="off"></textarea>
+        <div class="c-bar">
+          <button class="icon" type="button" aria-label="Attach a file"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></button>
+          <button class="icon opt" type="button" aria-label="Attach a screenshot"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="3" width="11" height="10" rx="2"/><path d="m2.5 10.5 3-3 3 3 2-2 3 3"/></svg></button>
+          <button class="icon opt" type="button" aria-label="Choose a branch"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="4" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="6" r="1.6"/><path d="M4.5 5.6v4.8M11.5 7.6c0 2-3 2-7 2.6"/></svg></button>
+          <button class="mode" type="button" aria-label="Mode: Agent">Agent</button>
+          <span class="hint" id="hint" aria-live="polite">Ctrl + Enter to start</span>
+          <div class="speed" role="group" aria-label="Speed">
+            <button type="button" aria-pressed="true">Normal</button><button type="button" aria-pressed="false">Fast</button>
+          </div>
+          <button class="icon opt" type="button" aria-label="Dictate"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="6" y="2" width="4" height="7.5" rx="2"/><path d="M3.5 8a4.5 4.5 0 0 0 9 0M8 12.5V14"/></svg></button>
+          <button class="send" type="submit" id="send" aria-label="Start session" disabled><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg></button>
+        </div>
+      </form>
+
+      <div class="grid">
+        <section class="glass card activity" aria-labelledby="h-act">
+          <h3 id="h-act"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M6 2.5v11M10 2.5v11M2.5 6h11M2.5 10h11"/></svg>Activity</h3>
+          <div class="heat" id="heat" role="img" aria-label="Sessions per day, May to November: busiest in September and October"></div>
+          <p class="meta"><span><span class="num">812</span> sessions · <span class="num">380</span> PRs merged · <span class="num">259,249</span> lines</span><span>May – Nov</span></p>
+        </section>
+        <section class="glass card recent" aria-labelledby="h-rec">
+          <h3 id="h-rec"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>Recent sessions</h3>
+          <ul class="list">
+            <li><b>Port the tile renderer to WebGPU</b><span>8 days ago · 14 files</span></li>
+            <li><b>Extract level data from the ROM dump</b><span>last month · 3 files</span></li>
+            <li><b>Café sim: save and load</b><span>last month · 9 files</span></li>
+          </ul>
+          <a class="more" href="#">2 more</a>
+        </section>
+        <section class="glass card usage" aria-labelledby="h-use">
+          <h3 id="h-use"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M11 5H6.5a1.75 1.75 0 0 0 0 3.5h3a1.75 1.75 0 0 1 0 3.5H5"/></svg>Usage</h3>
+          <p class="big num">880.29 <small>credits</small></p>
+          <div class="meter" role="img" aria-label="44% of this month's credits used"><b></b></div>
+          <p class="sub">Resets 1 Dec</p>
+        </section>
+        <section class="glass card prs" aria-labelledby="h-pr">
+          <h3 id="h-pr"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="4" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="12" r="1.6"/><path d="M4.5 5.6v4.8M7 4h2.5a2 2 0 0 1 2 2v4.4"/></svg>Pull requests</h3>
+          <ul class="list">
+            <li class="pr"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="4" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="12" r="1.6"/><path d="M4.5 5.6v4.8M7 4h2.5a2 2 0 0 1 2 2v4.4"/></svg><div><b>Preview picker: Escape cancels with focus in a text field</b><span>1 minute ago · open</span></div></li>
+            <li class="pr"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="4" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="12" r="1.6"/><path d="M4.5 5.6v4.8M7 4h2.5a2 2 0 0 1 2 2v4.4"/></svg><div><b>Sharing schema: guest links and guest sign-in</b><span>3 minutes ago · checks passing</span></div></li>
+            <li class="pr"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="4" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="12" r="1.6"/><path d="M4.5 5.6v4.8M7 4h2.5a2 2 0 0 1 2 2v4.4"/></svg><div><b>Show all shortcuts while Cmd or Ctrl is held</b><span>3 minutes ago · checks passing</span></div></li>
+          </ul>
+          <a class="more" href="#">97 more</a>
+        </section>
+        <section class="glass card month" aria-labelledby="h-mo">
+          <h3 id="h-mo"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>This month</h3>
+          <dl>
+            <div class="stat"><dt>Sessions</dt><dd class="num">36 <small class="dn">−177 vs Oct</small></dd></div>
+            <div class="stat"><dt>PRs merged</dt><dd class="num">7 <small class="dn">−98 vs Oct</small></dd></div>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ---- art: a planet's lit limb against space, quantized with an 8×8 Bayer matrix. Painted once per size. ----
+(() => {
+  const cv = document.getElementById("art"), cx = cv.getContext("2d");
+  const B = [0,32,8,40,2,34,10,42,48,16,56,24,50,18,58,26,12,44,4,36,14,46,6,38,60,28,52,20,62,30,54,22,3,35,11,43,1,33,9,41,51,19,59,27,49,17,57,25,15,47,7,39,13,45,5,37,63,31,55,23,61,29,53,21];
+  const hash = (x, y) => { let n = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
+  function paint() {
+    const W = cv.clientWidth, H = cv.clientHeight, C = 3;            // 3px dots
+    const cols = Math.ceil(W / C), rows = Math.ceil(H / C);
+    cv.width = cols; cv.height = rows;
+    const img = cx.createImageData(cols, rows), d = img.data;
+    // planet centre sits far below-left so the limb crosses the view on a shallow diagonal
+    const px = W * -0.15, py = H * 2.35, pr = Math.hypot(W * 0.62 - px, H * 0.16 - py);
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const X = x * C, Y = y * C, dist = Math.hypot(X - px, Y - py) - pr;      // < 0 inside the planet
+      const along = X / W;                                                      // the limb is hottest toward the right
+      const limb = Math.exp(-Math.pow(dist / (10 + along * 26), 2));
+      const glow = dist > 0 ? Math.exp(-dist / (50 + along * 90)) : 1;
+      const air = dist < 0 ? Math.exp(dist / (90 + along * 170)) : 0;
+      let r = 4 + limb * (120 + along * 135) + glow * 46 * along + air * 14;
+      let g = 5 + limb * (60 + along * 120) + glow * 18 * along + air * 34;
+      let b = 9 + limb * (40 + along * 40) + glow * 16 + air * 104;
+      if (dist > 0 && hash(x, y) > 0.9975) { r += 150; g += 150; b += 160; }      // stars
+      const t = (B[(y & 7) * 8 + (x & 7)] + .5) / 64 - .5, q = 5, i = (y * cols + x) * 4;
+      d[i] = Math.round(Math.min(1, Math.max(0, r / 255 + t / q)) * q) / q * 255;
+      d[i + 1] = Math.round(Math.min(1, Math.max(0, g / 255 + t / q)) * q) / q * 255;
+      d[i + 2] = Math.round(Math.min(1, Math.max(0, b / 255 + t / q)) * q) / q * 255;
+      d[i + 3] = 255;
+    }
+    cx.putImageData(img, 0, 0);
+  }
+  cv.style.imageRendering = "pixelated";
+  let t; new ResizeObserver(() => { clearTimeout(t); t = setTimeout(paint, 80); }).observe(cv); paint();
+})();
+
+// ---- activity heatmap: 26 weeks × 7 days, deterministic placeholder data ----
+(() => {
+  const heat = document.getElementById("heat"); let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const cells = [];
+  for (let d = 0; d < 7; d++) for (let w = 0; w < 26; w++) {
+    const season = Math.exp(-Math.pow((w - 18) / 6, 2)), weekday = d > 0 && d < 6 ? 1 : .35;
+    const v = rnd() * .5 + season * weekday * .9; cells.push(`<i data-l="${v > 1 ? 4 : v > .75 ? 3 : v > .5 ? 2 : v > .28 ? 1 : 0}"></i>`);
+  }
+  heat.innerHTML = cells.join("");
+})();
+
+// ---- composer: enable send when there is text, Ctrl/Cmd+Enter submits, the new session lands in Recent ----
+(() => {
+  const form = document.getElementById("composer"), ask = document.getElementById("ask"), send = document.getElementById("send"), hint = document.getElementById("hint"), list = document.getElementById("sessions");
+  ask.addEventListener("input", () => (send.disabled = !ask.value.trim()));
+  ask.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); form.requestSubmit(); } });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault(); const text = ask.value.trim(); if (!text) return;
+    list.querySelector("[aria-current]")?.removeAttribute("aria-current");
+    const li = document.createElement("li"), a = document.createElement("a"), b = document.createElement("b"), sp = document.createElement("span");
+    a.href = "#"; a.setAttribute("aria-current", "page"); b.textContent = text; sp.textContent = "just now"; a.append(b, sp); li.append(a); list.prepend(li);
+    ask.value = ""; send.disabled = true; hint.textContent = "Session started: " + (text.length > 48 ? text.slice(0, 48) + "…" : text);
+  });
+  document.getElementById("new").addEventListener("click", () => ask.focus());
+  document.querySelectorAll(".speed button").forEach((b, _, all) => b.addEventListener("click", () => all.forEach((o) => o.setAttribute("aria-pressed", o === b))));
+})();
+</script>
+</body>
+</html>

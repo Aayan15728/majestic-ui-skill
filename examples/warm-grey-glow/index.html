@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ecebe7">
+<title>Countwise — bookkeeping that files itself for freelancers</title>
+<style>
+/* slop-ok: overused-font, Newsreader chosen for this look; principles.md says what to use when the user has not decided */
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-800-normal.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --canvas: #ecebe7;
+  --panel: #f7f6f3;
+  --white: #ffffff;
+  --ink: #141413;
+  --ink-2: color-mix(in oklab, var(--ink) 64%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 46%, var(--canvas));
+  --hairline: rgb(20 20 19 / .09);
+  --glow-a: #ff9a57;
+  --glow-b: #f4b5c6;
+  --good: #1e8a52;
+  --font-display: "Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-num: "Newsreader", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+main { overflow-x: clip; position: relative; isolation: isolate; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- atmosphere: one warm blurred glow off the right edge, behind the preview ---------- */
+.glow { position: absolute; z-index: -1; right: -60px; top: 160px; width: 820px; height: 820px; pointer-events: none; filter: blur(60px); opacity: .85;
+  background: radial-gradient(closest-side at 40% 45%, var(--glow-a), transparent 70%), radial-gradient(closest-side at 65% 60%, var(--glow-b), transparent 72%); }
+
+/* ---------- nav ---------- */
+.nav { max-width: 1240px; height: 76px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 48px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 800 22px/1 var(--font-display); letter-spacing: -0.04em; }
+.logo svg { width: 24px; height: 24px; }
+.links { display: flex; gap: 32px; font-size: 15px; color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.login { margin-left: auto; font-size: 15px; font-weight: 500; }
+
+/* ---------- hero ---------- */
+.hero { max-width: 1240px; margin-inline: auto; padding: 64px var(--gutter) 0; display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+.news { display: inline-flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px 0 4px; border-radius: 999px; background: var(--white); box-shadow: inset 0 0 0 1px var(--hairline); font-size: 14px; color: var(--ink-2);
+  transition: box-shadow 150ms var(--ease); }
+.news:hover { box-shadow: inset 0 0 0 1px rgb(20 20 19 / .2); }
+.news b { height: 26px; display: inline-grid; place-items: center; padding-inline: 10px; border-radius: 999px; background: var(--ink); color: var(--white); font-size: 12px; font-weight: 500; }
+.news svg { width: 14px; height: 14px; }
+h1 { margin-top: 28px; font: 800 clamp(3rem, 5.6vw, 4.75rem)/0.94 var(--font-display); letter-spacing: -0.055em; }
+.lead { margin-top: 24px; max-width: 34ch; font-size: 19px; color: var(--ink-2); }
+.cta { margin-top: 36px; display: inline-flex; align-items: center; gap: 14px; height: 56px; padding: 0 8px 0 24px; border-radius: 14px; background: var(--ink); color: var(--white); font-weight: 600;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .14); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.cta:hover { background: #262624; }
+.cta:active { transform: scale(.97); }
+.cta span { height: 40px; display: inline-grid; place-items: center; padding-inline: 12px; border-radius: 10px; background: rgb(255 255 255 / .12); font: 400 14px/1 var(--font-mono); }
+.rating { margin-top: 24px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-2); }
+.faces { display: flex; }
+.faces i { width: 28px; height: 28px; border-radius: 50%; box-shadow: 0 0 0 2px var(--canvas); margin-left: -8px; font: 600 12px/28px var(--font-ui); font-style: normal; text-align: center; color: var(--ink); }
+.faces i:first-child { margin-left: 0; }
+.rating b { color: var(--ink); font-weight: 600; }
+
+/* ---------- dashboard preview (serif numbers are the signature) ---------- */
+.dash { position: relative; border-radius: 20px; background: rgb(247 246 243 / .86); backdrop-filter: blur(14px); padding: 8px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .7), 0 0 0 1px var(--hairline), 0 40px 80px -40px rgb(20 20 19 / .35); }
+.dash-in { border-radius: 14px; background: var(--white); box-shadow: inset 0 0 0 1px var(--hairline); overflow: hidden; }
+.bar-top { height: 48px; padding-inline: 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--hairline); font-size: 14px; }
+.bar-top b { font-weight: 600; }
+.bar-top .co { color: var(--ink-3); }
+.bar-top .seg { margin-left: auto; display: flex; padding: 2px; border-radius: 8px; background: var(--panel); font-size: 13px; }
+.seg span { padding: 4px 10px; border-radius: 6px; color: var(--ink-3); }
+.seg span.on { background: var(--white); color: var(--ink); box-shadow: 0 0 0 1px var(--hairline); }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--hairline); }
+.kpi { padding: 18px 16px; }
+.kpi + .kpi { border-left: 1px solid var(--hairline); }
+.kpi small { font-size: 13px; color: var(--ink-3); }
+.kpi b { display: block; margin-top: 6px; font: 400 36px/1 var(--font-num); letter-spacing: -0.02em; }
+.kpi em { display: inline-block; margin-top: 8px; font: normal 400 12px/1 var(--font-mono); color: var(--good); }
+.kpi em.flat { color: var(--ink-3); }
+.chart { padding: 16px 16px 8px; }
+.chart svg { width: 100%; height: 152px; display: block; }
+.axis { display: flex; justify-content: space-between; font: 400 12px/1 var(--font-mono); color: var(--ink-3); padding: 4px 16px 16px; }
+.tx { border-top: 1px solid var(--hairline); }
+.tx-row { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 10px 16px; font-size: 14px; }
+.tx-row + .tx-row { border-top: 1px solid var(--hairline); }
+.tx-row small { display: block; color: var(--ink-3); font-size: 12px; }
+.pill { padding: 2px 8px; border-radius: 999px; font-size: 12px; background: var(--panel); color: var(--ink-2); }
+.tx-row b { font: 400 18px/1 var(--font-num); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 680ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; }
+.copy > :nth-child(4) { animation-delay: 210ms; } .copy > :nth-child(5) { animation-delay: 280ms; }
+.dash { animation: rise 900ms 320ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links { display: none; }
+  .hero { grid-template-columns: 1fr; padding-top: 40px; padding-bottom: 48px; gap: 48px; }
+  .glow { right: -360px; top: 520px; width: 640px; height: 640px; }
+  .kpi { padding: 14px 12px; }
+  .kpi b { font-size: 26px; }
+  .tx-row .pill, .bar-top .co { display: none; }
+  .tx-row { grid-template-columns: 1fr auto; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--white); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="glow" aria-hidden="true"></div>
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" fill="#141413"/><path d="M7 15l3-3 2 2 5-5" stroke="#ff9a57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Countwise</a>
+    <div class="links"><a href="#">Features</a><a href="#">Taxes</a><a href="#">Pricing</a><a href="#">Changelog</a></div>
+    <a class="login" href="#">Log in</a>
+  </nav>
+
+  <section class="hero">
+    <div class="copy">
+      <a class="news" href="#"><b>New</b>Quarterly tax estimates, filed for you<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="m6 4 4 4-4 4"/></svg></a>
+      <h1>Your books, done before you open them</h1>
+      <p class="lead">Countwise reads your bank feed, sorts every receipt and sets aside the tax you owe, so April is a button and not a weekend.</p>
+      <a class="cta" href="#">Start your books<span class="num">$9/mo</span></a>
+      <div class="rating">
+        <span class="faces" aria-hidden="true"><i style="background:#ffd9bf"></i><i style="background:#d7e6d0"></i><i style="background:#f4d6e0"></i></span>
+        <span><b class="num">4.9</b> from <span class="num">2,140</span> freelancers on Capterra</span>
+      </div>
+    </div>
+
+    <div class="dash" aria-label="Countwise dashboard preview">
+      <div class="dash-in">
+        <div class="bar-top"><b>Overview</b><span class="co">Studio Fern, LLC</span><span class="seg"><span>Month</span><span class="on">Quarter</span><span>Year</span></span></div>
+        <div class="kpis">
+          <div class="kpi"><small>Income</small><b class="num">$38,420</b><em class="num">+12.4% vs Q2</em></div>
+          <div class="kpi"><small>Expenses</small><b class="num">$6,180</b><em class="num flat">−3.1% vs Q2</em></div>
+          <div class="kpi"><small>Tax set aside</small><b class="num">$8,064</b><em class="num">Ready for Jan 15</em></div>
+        </div>
+        <div class="chart" aria-hidden="true">
+          <svg viewBox="0 0 600 150" preserveAspectRatio="none">
+            <g stroke="rgb(20 20 19 / .07)"><path d="M0 30h600M0 75h600M0 120h600"/></g>
+            <path d="M0 118C50 110 80 96 130 98s90-30 140-34 80 16 130-6 90-40 140-42 40-6 60-8" fill="none" stroke="#141413" stroke-width="2"/>
+            <path d="M0 118C50 110 80 96 130 98s90-30 140-34 80 16 130-6 90-40 140-42 40-6 60-8V150H0Z" fill="rgb(255 154 87 / .14)"/>
+            <path d="M0 136c60-2 100-6 160-4s110-8 170-6 120-6 180-10 60-2 90-2" fill="none" stroke="#141413" stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <circle cx="540" cy="22" r="4.5" fill="#141413"/><circle cx="540" cy="22" r="9" fill="none" stroke="#ff9a57" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="axis"><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span></div>
+        <div class="tx">
+          <div class="tx-row"><span>Halcyon Press<small>Invoice 0142 paid</small></span><span class="pill">Income</span><b class="num">+$4,800</b></div>
+          <div class="tx-row"><span>Design tool seat<small>Sorted as Software</small></span><span class="pill">Expense</span><b class="num">−$15</b></div>
+          <div class="tx-row"><span>Tax reserve<small>25% of Halcyon payment</small></span><span class="pill">Moved</span><b class="num">$1,200</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

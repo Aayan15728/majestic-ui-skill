@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1d3cf5">
+<title>Lampyr — light up every log line that matters</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --field: #1d3cf5;
+  --field-deep: #1530d0;
+  --on-field: #ffffff;
+  --on-field-2: rgb(255 255 255 / .78);
+  --on-field-3: rgb(255 255 255 / .56);
+  --bar: #ffffff;
+  --ink: #0b1030;
+  --ink-2: color-mix(in oklab, var(--ink) 62%, white);
+  --hairline: rgb(11 16 48 / .1);
+  --lamp: #fff3c4;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--field); color-scheme: dark; }
+body { margin: 0; color: var(--on-field); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- atmosphere: electric field with a swirled stipple + a lamp casting a denser cone ---------- */
+.hero { position: relative; min-height: max(840px, 100svh); isolation: isolate; display: flex; flex-direction: column; padding-top: 20px; }
+#field { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -2; background: radial-gradient(70% 60% at 70% 40%, #2747ff, var(--field) 60%, var(--field-deep)); }
+
+/* ---------- floating white nav bar ---------- */
+.nav { width: calc(100% - 2 * var(--gutter)); max-width: 1180px; height: 60px; margin-inline: auto; padding: 0 8px 0 20px; border-radius: 14px; background: var(--bar); color: var(--ink);
+  display: flex; align-items: center; gap: 40px; box-shadow: 0 20px 40px -24px rgb(5 10 60 / .6); }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 600 18px/1 var(--font-ui); letter-spacing: -0.02em; }
+.logo svg { width: 22px; height: 22px; }
+.links { display: flex; gap: 28px; font-size: 15px; color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.nav-r { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding-inline: 18px; border-radius: 10px; font-weight: 500; font-size: 15px;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.quiet:hover { background: #f1f2f7; }
+.btn.blue { background: var(--field); color: #fff; }
+.btn.blue:hover { background: #2a48ff; }
+
+/* ---------- copy ---------- */
+.copy { flex: 1; width: 100%; max-width: 1180px; margin-inline: auto; padding: 96px var(--gutter) 0; }
+.log { display: block; font: 400 13px/1 var(--font-mono); color: var(--on-field-2); }
+.log b { font-weight: 500; color: var(--lamp); margin-right: 8px; }
+h1 { margin-top: 24px; font: 600 clamp(3rem, 7vw, 6.25rem)/0.95 var(--font-ui); letter-spacing: -0.05em; max-width: 11ch; }
+.lead { margin-top: 28px; max-width: 38ch; font-size: 19px; color: var(--on-field-2); }
+.ctas { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+.btn.lg { height: 52px; padding-inline: 24px; font-size: 16px; }
+.btn.white { background: #fff; color: var(--ink); }
+.btn.white:hover { background: var(--lamp); }
+.btn.line { color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .4); }
+.btn.line:hover { background: rgb(255 255 255 / .1); }
+.cmd { font: 400 15px/1 var(--font-mono); }
+
+/* ---------- logo tiles ---------- */
+.tiles { width: 100%; max-width: 1180px; margin: 0 auto; padding: 72px var(--gutter) 40px; }
+.tiles p { font-size: 14px; color: var(--on-field-3); }
+.row { margin-top: 16px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.tile { height: 72px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 16px/1 var(--font-ui); letter-spacing: -0.02em;
+  background: rgb(255 255 255 / .08); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14); backdrop-filter: blur(6px); color: var(--on-field-2); transition: background-color 150ms var(--ease); }
+.tile:hover { background: rgb(255 255 255 / .14); }
+.tile svg { width: 18px; height: 18px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 680ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; } .copy > :nth-child(4) { animation-delay: 210ms; }
+.tiles { animation: rise 800ms 320ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .btn.quiet { display: none; }
+  .copy { padding-top: 72px; }
+  .row { grid-template-columns: repeat(2, 1fr); }
+  .tiles { padding-top: 56px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: #fff; color: var(--ink); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <section class="hero" aria-labelledby="h">
+    <canvas id="field" aria-hidden="true"></canvas>
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="#"><svg viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="#1d3cf5"/><path d="M11 5v3M7 9h8l-2 7H9z" stroke="#fff3c4" stroke-width="1.8" stroke-linejoin="round"/></svg>Lampyr</a>
+      <div class="links"><a href="#">Product</a><a href="#">Docs</a><a href="#">Pricing</a><a href="#">Customers</a></div>
+      <div class="nav-r"><a class="btn quiet" href="#">Sign in</a><a class="btn blue" href="#">Start free</a></div>
+    </nav>
+
+    <div class="copy">
+      <p class="log"><b>ERROR</b>checkout-api 502 traced to a slow DNS lookup in 1.8s</p>
+      <h1 id="h">Light up the one log line that matters</h1>
+      <p class="lead">Lampyr reads every log, trace and deploy, then points at the line that broke production, with the commit that wrote it.</p>
+      <div class="ctas"><a class="btn white lg" href="#">Start free</a><a class="btn line lg cmd" href="#">npx lampyr init</a></div>
+    </div>
+
+    <div class="tiles">
+      <p>Watching production for</p>
+      <div class="row">
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><path d="M3 9h12"/></svg>Northbeam</span>
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m3 14 6-10 6 10z"/></svg>Peakline</span>
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="12" height="12" rx="3"/></svg>Boxfold</span>
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9c3-6 9-6 12 0-3 6-9 6-12 0z"/></svg>Irisly</span>
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h10v10H4zM4 9h10"/></svg>Tabula</span>
+        <span class="tile"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 2v14M2 9h14"/></svg>Quadra</span>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+// Stipple field: dots follow a swirl flow; a street lamp on the right casts a denser, warmer cone.
+(() => {
+  const c = document.getElementById("field"), ctx = c.getContext("2d");
+  function rnd(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+  function draw() {
+    const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const r = rnd(7), mob = w < 900;
+    const tiles = document.querySelector(".tiles"), ground = tiles ? tiles.offsetTop + 8 : h;
+    const cx = w * (mob ? .75 : .68), cy = h * (mob ? .62 : .42);  // swirl centre
+    const lx = w * .82, ly = h * .22;                               // lamp head (desktop only)
+    const n = Math.round(w * h / (mob ? 16 : 11));
+    for (let i = 0; i < n; i++) {
+      const x = r() * w, y = r() * h;
+      const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
+      const fall = Math.max(0, 1 - d / (Math.max(w, h) * .75));  // arms fade with distance
+      const band = Math.pow(.5 + .5 * Math.sin(d / 22 - a * 3), 3) * fall;  // spiral arms
+      // light cone below the lamp
+      const ax = x - lx, ay = y - ly, inCone = !mob && ay > 0 && y < ground && Math.abs(ax) < ay * .55;
+      const cone = inCone ? Math.max(0, 1 - ay / (h * .75)) * (1 - Math.abs(ax) / (ay * .55 + 1)) : 0;
+      const keep = band * .9 + cone * 1.4 + .015;
+      if (r() > keep) continue;
+      const sz = .6 + band * .9 + cone * .8;
+      ctx.fillStyle = cone > .12 ? `rgba(255, 243, 196, ${.4 + cone * .6})` : `rgba(210, 222, 255, ${.22 + band * .6})`;
+      ctx.fillRect(x, y, sz, sz);
+    }
+    if (mob) return;
+    // lamp post, standing on the line above the logo tiles
+    ctx.strokeStyle = "rgba(8, 14, 70, .9)"; ctx.lineWidth = mob ? 4 : 6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(lx + 40, ground); ctx.lineTo(lx + 40, ly - 30); ctx.quadraticCurveTo(lx + 40, ly - 56, lx + 14, ly - 56); ctx.lineTo(lx, ly - 56); ctx.stroke();
+    ctx.fillStyle = "rgba(8, 14, 70, .95)";
+    ctx.beginPath(); ctx.moveTo(lx - 18, ly - 6); ctx.lineTo(lx - 10, ly - 40); ctx.lineTo(lx + 10, ly - 40); ctx.lineTo(lx + 18, ly - 6); ctx.closePath(); ctx.fill();
+    const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, 70); g.addColorStop(0, "rgba(255, 243, 196, .9)"); g.addColorStop(1, "rgba(255, 243, 196, 0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lx, ly, 70, 0, Math.PI * 2); ctx.fill();
+  }
+  document.fonts.ready.then(draw);
+  let t; addEventListener("resize", () => { cancelAnimationFrame(t); t = requestAnimationFrame(draw); });
+})();
+</script>
+</body>
+</html>

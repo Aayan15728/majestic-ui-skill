@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fbfaf8">
+<title>Relaywise — AI inference tailored to your use case</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --canvas: #fbfaf8;
+  --card: #fbfaf8;
+  --ink: #1b1b1a;
+  --ink-2: color-mix(in oklab, var(--ink) 64%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 46%, var(--canvas));
+  --hairline: rgb(27 27 26 / .12);
+  --accent: #2f5bd8;
+  --accent-hover: #2550c7;
+  --lane-a: #c3cff5;
+  --lane-b: #bfe9ec;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--lane-a); }
+.num { font-variant-numeric: tabular-nums; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---------- nav ---------- */
+.nav { position: relative; z-index: 2; height: 80px; padding-inline: var(--gutter); display: flex; align-items: center; gap: 48px; border-bottom: 1px solid var(--hairline); background: var(--canvas); }
+.nav-in { width: 100%; max-width: 1240px; margin-inline: auto; display: flex; align-items: center; gap: 48px; }
+.logo { display: inline-flex; align-items: center; gap: 6px; font: 500 18px/1 var(--font-ui); letter-spacing: -0.03em; }
+.logo svg { width: 18px; height: 18px; }
+.links { display: flex; gap: 32px; font-size: 15px; color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav-r { margin-left: auto; display: flex; align-items: center; gap: 24px; font-size: 15px; }
+.nav-r .in { color: var(--ink-2); } .nav-r .in:hover { color: var(--ink); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 44px; padding-inline: 20px; background: var(--accent); color: #fff; font-weight: 600; font-size: 15px;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:hover { background: var(--accent-hover); }
+.btn:active { transform: scale(.98); }
+.btn svg { width: 16px; height: 16px; }
+
+/* ---------- atmosphere: model streams converging on one card ---------- */
+.stage { position: relative; isolation: isolate; height: max(640px, calc(100svh - 80px)); display: grid; place-items: center; padding-inline: var(--gutter); }
+#streams { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* ---------- the card (signature: hairline box with square nodes on its edges) ---------- */
+.card { position: relative; width: min(560px, 100%); padding: 48px 44px 40px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hairline); text-align: center; }
+.card::before, .card::after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; translate: 0 -50%; background: var(--accent); }
+.card::before { left: -4px; } .card::after { right: -4px; }
+.serving { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; color: var(--ink-2); }
+.serving b { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #fff; box-shadow: inset 0 0 0 1px var(--hairline); color: var(--ink); font: 400 14px/1 var(--font-mono); }
+.serving i { width: 6px; height: 6px; background: #1f9d63; }
+h1 { margin-top: 24px; font: 500 clamp(2.5rem, 4.6vw, 3.25rem)/1.05 var(--font-ui); letter-spacing: -0.04em; }
+h1 span { color: var(--accent); }
+.lead { margin: 16px auto 0; max-width: 36ch; font-size: 16px; color: var(--ink-2); }
+.card .btn { margin-top: 28px; width: 100%; height: 48px; }
+.demo { display: inline-block; margin-top: 20px; font-size: 15px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgb(27 27 26 / .35); }
+.demo:hover { text-decoration-color: currentColor; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.card > * { animation: rise 680ms var(--ease) both; }
+.card > :nth-child(2) { animation-delay: 70ms; } .card > :nth-child(3) { animation-delay: 140ms; }
+.card > :nth-child(4) { animation-delay: 210ms; } .card > :nth-child(5) { animation-delay: 280ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .nav-r .in { display: none; }
+  .stage { height: auto; min-height: 720px; padding-block: 200px 120px; }
+  .card { padding: 36px 24px 32px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="nav" aria-label="Main">
+  <div class="nav-in">
+    <a class="logo" href="#"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 1v16M1 9h16M3.3 3.3l11.4 11.4M14.7 3.3 3.3 14.7"/></svg>relaywise</a>
+    <div class="links"><a href="#">Models</a><a href="#">Capacity</a><a href="#">Docs</a><a href="#">Playground</a></div>
+    <div class="nav-r"><a class="in" href="#">Sign in</a><a class="btn" href="#">Book a demo</a></div>
+  </div>
+</nav>
+<main id="main">
+  <section class="stage" aria-labelledby="h">
+    <canvas id="streams" aria-hidden="true"></canvas>
+    <div class="card">
+      <p class="serving"><b><i aria-hidden="true"></i><span class="num">2.1B</span></b>tokens routed yesterday</p>
+      <h1 id="h">AI inference, tailored <span>for your use case</span></h1>
+      <p class="lead">We pick the model, region and batch size per request, so latency and cost fit your product instead of a price sheet.</p>
+      <a class="btn" href="#">I need inference<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      <a class="demo" href="#">Book a demo</a>
+    </div>
+  </section>
+</main>
+<script>
+// Model streams: soft lanes curve in from both edges toward the card, each carrying glyph traffic,
+// plus hairline routes with square nodes and a few model tiles at the lane mouths. Drawn once.
+(() => {
+  const c = document.getElementById("streams"), ctx = c.getContext("2d");
+  const glyphs = "#@+0*:=-%x".split("");
+  const tiles = [["#e2683f", "burst"], ["#2f5bd8", "knot"], ["#1f9d63", "fold"], ["#f2c94c", "bars"], ["#1b1b1a", "frame"], ["#e45b8f", "dots"]];
+  function rnd(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+  function bez(p0, p1, p2, p3, t) { const u = 1 - t; return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]; }
+  function tile(x, y, s, col, kind) {
+    ctx.fillStyle = kind === "frame" ? "#1b1b1a" : "#fff"; ctx.fillRect(x, y, s, s);
+    ctx.strokeStyle = "rgba(27,27,26,.12)"; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, s - 1, s - 1);
+    const m = x + s / 2, n = y + s / 2, k = s * 0.28; ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = s * 0.08;
+    ctx.beginPath();
+    if (kind === "burst") { for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.moveTo(m, n); ctx.lineTo(m + Math.cos(a) * k * 1.3, n + Math.sin(a) * k * 1.3); } ctx.stroke(); }
+    else if (kind === "knot") { ctx.arc(m - k / 2, n, k * .7, 0, 7); ctx.moveTo(m + k * 1.2, n); ctx.arc(m + k / 2, n, k * .7, 0, 7); ctx.stroke(); }
+    else if (kind === "fold") { ctx.moveTo(m - k, n + k); ctx.lineTo(m - k / 3, n - k); ctx.lineTo(m + k / 3, n + k); ctx.lineTo(m + k, n - k); ctx.stroke(); }
+    else if (kind === "bars") { for (let i = -1; i <= 1; i++) ctx.rect(m + i * k * .8 - k * .25, n - k * (1 - Math.abs(i) * .4), k * .5, k * 2 * (1 - Math.abs(i) * .4)); ctx.fill(); }
+    else if (kind === "frame") { ctx.strokeStyle = "#fff"; const q = k * .7; [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => { ctx.moveTo(m + a * k, n + b * k + -b * q); ctx.lineTo(m + a * k, n + b * k); ctx.lineTo(m + a * k - a * q, n + b * k); }); ctx.stroke(); }
+    else { for (let i = 0; i < 3; i++) { ctx.moveTo(m + (i - 1) * k * .9 + k * .3, n); ctx.arc(m + (i - 1) * k * .9, n, k * .3, 0, 7); } ctx.fill(); }
+  }
+  function draw() {
+    const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const r = rnd(5), mob = w < 900, cx = w / 2, cy = h / 2, cardW = Math.min(560, w - 40), half = cardW / 2;
+    const lanes = mob ? 5 : 8, fs = mob ? 10 : 12;
+    ctx.font = `${fs}px "Geist Mono", ui-monospace, monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const side of [-1, 1]) for (let i = 0; i < lanes; i++) {
+      const t = i / (lanes - 1), startY = mob ? (side < 0 ? 20 + t * 140 : h - 160 + t * 140) : -40 + t * (h + 80);
+      const p0 = mob ? [side < 0 ? -20 : w + 20, startY] : [side < 0 ? -40 : w + 40, startY];
+      const endX = cx + side * (mob ? half * .2 : half), endY = mob ? (side < 0 ? cy - 160 : cy + 160) : cy - 60 + t * 120;
+      const p3 = [endX, endY], p1 = [p0[0] + side * -w * .18, p0[1]], p2 = [endX + side * w * .16, endY];
+      const col = i % 2 ? "rgba(191,233,236,.85)" : "rgba(195,207,245,.85)", ink = i % 2 ? "rgba(32,150,160," : "rgba(47,91,216,";
+      ctx.strokeStyle = col; ctx.lineWidth = mob ? 10 : 14; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(...p0); ctx.bezierCurveTo(...p1, ...p2, ...p3); ctx.stroke();
+      for (let s = 0.02; s < 0.94; s += 0.022 + r() * 0.03) {
+        if (r() < 0.25) continue; const [x, y] = bez(p0, p1, p2, p3, s);
+        ctx.fillStyle = ink + (0.35 + r() * 0.5) + ")"; ctx.fillText(glyphs[Math.floor(r() * glyphs.length)], x, y);
+      }
+    }
+    if (mob) return;
+    // hairline routes with square nodes
+    ctx.strokeStyle = "rgba(47,91,216,.55)"; ctx.lineWidth = 1; ctx.fillStyle = "#2f5bd8";
+    const routes = [[[cx - half - 120, cy - 150], [cx - half - 120, cy - 40], [cx - half, cy - 40]], [[cx + half + 60, cy - 190], [cx + half + 60, cy - 100], [cx + half, cy - 100]], [[cx + half, cy + 80], [cx + half + 120, cy + 80], [cx + half + 120, cy + 190]], [[cx - half - 200, cy + 200], [cx - half - 60, cy + 200], [cx - half - 60, cy + 60], [cx - half, cy + 60]]];
+    for (const pts of routes) { ctx.beginPath(); ctx.moveTo(...pts[0]); pts.slice(1).forEach((p) => ctx.lineTo(...p)); ctx.stroke(); pts.forEach(([x, y]) => ctx.fillRect(x - 2, y - 2, 4, 4)); }
+    // model tiles at lane mouths
+    const spots = [[w * .1, h * .18, 60], [w * .08, h * .62, 56], [w * .21, h * .86, 36], [w * .86, h * .15, 60], [w * .9, h * .44, 56], [w * .88, h * .82, 60], [w * .77, h * .58, 32], [w * .2, h * .36, 30]];
+    spots.forEach(([x, y, s], i) => tile(x - s / 2, y - s / 2, s, tiles[i % tiles.length][0], i === 6 || i === 7 ? "frame" : tiles[i % tiles.length][1]));
+  }
+  document.fonts.ready.then(draw);
+  let t; addEventListener("resize", () => { cancelAnimationFrame(t); t = requestAnimationFrame(draw); });
+})();
+</script>
+</body>
+</html>

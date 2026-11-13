@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#a99bc4">
+<title>Snapframe — capture, edit, organize and share in one place</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --ink: #ffffff;
+  --ink-2: rgb(255 255 255 / .9);
+  --ink-3: rgb(255 255 255 / .72);
+  --bar: #1c1c1e;
+  --sky-blue: #0a7fc4;
+  --sky-blue-deep: #086aa6;
+  --page: #ffffff;
+  --window: #232326;
+  --window-2: #2c2c30;
+  --hairline: rgb(255 255 255 / .1);
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--page); }
+body { margin: 0; color: #1d1d1f; font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--sky-blue); color: #fff; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 10px; }
+
+/* ---------- atmosphere: an alpenglow range painted once to canvas ---------- */
+.hero { position: relative; isolation: isolate; color: var(--ink); padding: 14px var(--gutter) 0; }
+#range { position: absolute; inset: 0 0 auto 0; width: 100%; height: 860px; z-index: -1; }
+.hero::before { content: ""; position: absolute; left: 50%; top: 112px; width: 1500px; height: 600px; translate: -50% 0; z-index: 0; background: radial-gradient(closest-side, rgb(38 28 66 / .74) 62%, transparent); }
+.hero::after { content: ""; position: absolute; left: 0; right: 0; top: 700px; height: 160px; z-index: -1; background: linear-gradient(to bottom, rgb(255 255 255 / 0), var(--page)); }
+
+/* ---------- dark pill nav ---------- */
+.nav { width: max-content; max-width: 100%; margin-inline: auto; display: flex; align-items: center; gap: 4px; padding: 6px; border-radius: 16px; background: var(--bar);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08), inset 0 1px 0 rgb(255 255 255 / .06), 0 12px 32px -12px rgb(30 20 50 / .5); }
+.mark { width: 40px; height: 40px; display: grid; place-items: center; }
+.mark svg { width: 26px; height: 26px; }
+.nav a.l { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding-inline: 12px; border-radius: 10px; font-weight: 500; font-size: 15px; color: rgb(255 255 255 / .78); transition: color 150ms var(--ease), background-color 150ms var(--ease); }
+.nav a.l:hover { color: #fff; background: rgb(255 255 255 / .06); }
+.nav a.l svg { width: 12px; height: 12px; }
+.nav .sep { width: 16px; }
+.blue { display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #fff; font-weight: 600; background: linear-gradient(#0d82c4, var(--sky-blue-deep));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), 0 0 0 1px rgb(0 0 0 / .08), 0 6px 16px -6px rgb(14 165 240 / .8); transition: filter 150ms var(--ease), transform 150ms var(--ease); }
+.blue:hover { filter: brightness(1.06); }
+.blue:active { transform: scale(.97); }
+.blue svg { width: 16px; height: 16px; }
+.nav .blue { height: 40px; padding-inline: 14px; border-radius: 10px; font-size: 15px; }
+
+/* ---------- copy ---------- */
+.copy { position: relative; z-index: 1; max-width: 900px; margin-inline: auto; padding-top: 72px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+h1 { font: 600 clamp(2.75rem, 5vw, 4.5rem)/1.06 var(--font-ui); letter-spacing: -0.04em; max-width: 15ch; }
+.lead { margin-top: 24px; max-width: 40ch; font-size: 17px; color: #fff; }
+.cta { margin-top: 48px; height: 48px; padding-inline: 20px; border-radius: 12px; font-size: 17px; }
+.fine { margin-top: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 14px; font-weight: 500; color: #fff; }
+.fine span { display: inline-flex; align-items: center; gap: 6px; }
+.fine svg { width: 14px; height: 14px; }
+
+/* ---------- product window rising from the bottom ---------- */
+.window { position: relative; max-width: 1040px; margin: 88px auto 0; border-radius: 16px; overflow: hidden; background: var(--window); color: #eee;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .25), inset 0 1px 0 rgb(255 255 255 / .08), 0 40px 80px -30px rgb(40 25 40 / .55); }
+.wbar { height: 48px; display: flex; align-items: center; gap: 16px; padding-inline: 16px; background: var(--window-2); border-bottom: 1px solid var(--hairline); }
+.dots { display: flex; gap: 8px; } .dots i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; } .dots i:nth-child(2) { background: #febc2e; } .dots i:nth-child(3) { background: #28c840; }
+.tools { margin-inline: auto; display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: rgb(0 0 0 / .25); }
+.tools span { width: 32px; height: 28px; border-radius: 6px; display: grid; place-items: center; color: rgb(255 255 255 / .7); }
+.tools span[aria-current] { background: rgb(255 255 255 / .12); color: #fff; }
+.tools svg { width: 16px; height: 16px; }
+.wbar .share { height: 30px; padding-inline: 12px; border-radius: 8px; font-size: 13px; }
+.shot { position: relative; height: 360px; }
+.shot canvas { width: 100%; height: 100%; display: block; }
+.note { position: absolute; left: 58%; top: 26%; padding: 6px 10px; border-radius: 8px; background: #b8400f; color: #fff; font: 500 13px/1.2 var(--font-ui); box-shadow: 0 6px 14px -6px rgb(0 0 0 / .5); }
+.box { position: absolute; left: 38%; top: 40%; width: 18%; height: 34%; border: 3px solid #ff7a2f; border-radius: 6px; }
+.arrow { position: absolute; left: 52%; top: 31%; width: 8%; height: 14%; }
+.size { position: absolute; right: 16px; bottom: 16px; padding: 4px 8px; border-radius: 6px; background: rgb(0 0 0 / .55); font: 400 12px/1 var(--font-mono); color: #ddd; }
+.below { height: 40px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 640ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; } .copy > :nth-child(4) { animation-delay: 210ms; }
+.window { animation: rise 900ms 300ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 760px) {
+  .nav a.l:not(.keep), .nav .sep { display: none; }
+  .copy { padding-top: 56px; }
+  .hero::before { top: 64px; width: 760px; height: 600px; background: radial-gradient(closest-side, rgb(38 28 66 / .78) 70%, transparent); }
+  .cta { width: 100%; }
+  .window { margin-top: 64px; border-radius: 12px; }
+  .tools span:nth-child(n+4) { display: none; }
+  .shot { height: 240px; }
+  .note { left: auto; right: 12px; white-space: nowrap; font-size: 12px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: #1d1d1f; color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <section class="hero" aria-labelledby="h">
+    <canvas id="range" aria-hidden="true"></canvas>
+    <nav class="nav" aria-label="Main">
+      <a class="mark" href="#" aria-label="Snapframe home"><svg viewBox="0 0 26 26"><rect x="2" y="2" width="22" height="22" rx="7" fill="#fff"/><path d="M8 8h6M8 8v6M18 18h-6M18 18v-6" stroke="#1c1c1e" stroke-width="2.6" stroke-linecap="round"/></svg></a>
+      <a class="l" href="#">Features<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m3 4.5 3 3 3-3"/></svg></a>
+      <a class="l" href="#">Pricing</a><a class="l" href="#">FAQ</a>
+      <span class="sep" aria-hidden="true"></span>
+      <a class="l keep" href="#">Log in</a>
+      <a class="blue" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Download</a>
+    </nav>
+
+    <div class="copy">
+      <h1 id="h">Capture, edit, organize, and share in one place</h1>
+      <p class="lead">Screenshots, recordings and scrolling captures, sorted by a private model that runs on your Mac, not in someone's cloud.</p>
+      <a class="blue cta" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="12" height="8" rx="1.5"/><path d="M1 13h14"/></svg>Try free for macOS</a>
+      <p class="fine"><span><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="5" width="10" height="3" rx=".5"/><path d="M3 8v4h8V8M7 5v7M7 5C6 3 4 3 4 4.3S7 5 7 5s3 .4 3-.7S8 3 7 5"/></svg>Includes a 7-day free trial</span><span><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 6h11"/></svg>No card required</span></p>
+    </div>
+
+    <div class="window" aria-label="Snapframe editor preview">
+      <div class="wbar">
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="tools" aria-hidden="true">
+          <span aria-current="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 13 13 3M8 3h5v5"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4h8M8 4v9"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="currentColor" opacity=".8"><circle cx="5" cy="5" r="1.4"/><circle cx="11" cy="5" r="1.4"/><circle cx="5" cy="11" r="1.4"/><circle cx="11" cy="11" r="1.4"/><circle cx="8" cy="8" r="1.4"/></svg></span>
+          <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 1v11h11M1 4h11v11"/></svg></span>
+        </span>
+        <a class="blue share" href="#">Share link</a>
+      </div>
+      <div class="shot">
+        <canvas id="forest" aria-hidden="true"></canvas>
+        <svg class="arrow" viewBox="0 0 80 60" fill="none" stroke="#ff7a2f" stroke-width="5" stroke-linecap="round" aria-hidden="true"><path d="M70 6C50 10 30 26 14 50M14 50l2-18M14 50l17-5"/></svg>
+        <span class="box" aria-hidden="true"></span>
+        <span class="note">Use this crop for the hero</span>
+        <span class="size">2880 × 1620</span>
+      </div>
+    </div>
+  </section>
+  <div class="below"></div>
+</main>
+<script>
+// Shared noise helpers
+const h2 = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+const sm = (t) => t * t * (3 - 2 * t);
+const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = h2(xi, yi), b = h2(xi + 1, yi), c = h2(xi, yi + 1), d = h2(xi + 1, yi + 1), u = sm(xf), v = sm(yf);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+const R = (x, y, o = 6) => { let s = 0, a = .6, f = 1; for (let i = 0; i < o; i++) { const n = 1 - Math.abs(vn(x * f, y * f) * 2 - 1); s += a * n * n; a *= .5; f *= 2.05; } return s; };
+const fbm = (x, y, o = 5) => { let s = 0, a = .5, f = 1; for (let i = 0; i < o; i++) { s += a * vn(x * f, y * f); a *= .5; f *= 2.03; } return s; };
+const mix = (a, b, t) => a + (b - a) * t;
+
+// An alpenglow range: lilac sky, peach horizon, three ridges with hillshade lit from the right, haze between them.
+(() => {
+  const c = document.getElementById("range"), ctx = c.getContext("2d");
+  const layers = [
+    { top: (x, w, h) => h * (.62 - .5 * Math.pow(Math.max(0, 1 - Math.abs(x / w - .2) * 2.4), 1.4) - .1 * R(x / 160, 1.3)), lit: [255, 214, 196], shade: [150, 140, 182], rock: [118, 98, 120], haze: .1, snow: true },
+    { top: (x, w, h) => h * (.74 - .14 * R(x / 220, 6.1) - .12 * Math.max(0, 1 - Math.abs(x / w - .8) * 3)), lit: [244, 190, 168], shade: [146, 128, 160], rock: [132, 100, 112], haze: .38, snow: true },
+    { top: (x, w, h) => h * (.8 - .1 * R(x / 260, 9.3)), lit: [206, 140, 104], shade: [120, 92, 104], rock: [120, 86, 84], haze: .2, snow: false },
+    { top: (x, w, h) => h * (.88 - .08 * R(x / 300, 12.7)), lit: [196, 128, 90], shade: [112, 80, 78], rock: [104, 72, 66], haze: .08, snow: false },
+  ];
+  function draw() {
+    const w = Math.round(c.clientWidth), h = Math.round(c.clientHeight); if (!w) return;
+    c.width = w; c.height = h;
+    const img = ctx.createImageData(w, h), d = img.data, L = [.6, -.5, .62];
+    const tops = layers.map((Ly) => { const t = new Float32Array(w); for (let x = 0; x < w; x++) t[x] = Ly.top(x, w, h); return t; });
+    for (let y = 0; y < h; y++) {
+      const t = y / h; const sky = [mix(150, 236, sm(Math.min(1, t * 1.5))), mix(144, 196, sm(Math.min(1, t * 1.5))), mix(196, 196, t)];
+      for (let x = 0; x < w; x++) {
+        let r = sky[0], g = sky[1], b = sky[2];
+        const cl = fbm(x / 180, y / 50 + 3); if (t < .45 && cl > .58) { const k = Math.min(1, (cl - .58) * 5) * (1 - t * 1.6); r = mix(r, 252, k * .8); g = mix(g, 206, k * .8); b = mix(b, 196, k * .8); }
+        for (let li = 0; li < layers.length; li++) {
+          const Ly = layers[li], top = tops[li][x]; if (y < top) continue;
+          const X = x / 170, Y = y / 170 + li * 5, e = .006;
+          const Hf = (u, v) => R(u * 1.1, v * .4, 5) * .7 + R(u * 3, v * 3 + 11, 3) * .06;
+          const hx = (Hf(X + e, Y) - Hf(X - e, Y)) / (2 * e), hy = (Hf(X, Y + e) - Hf(X, Y - e)) / (2 * e);
+          let nx = -hx * .32, ny = -hy * .32 + .2, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+          const lit = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]), steep = 1 - nz, depth = (y - top) / h;
+          const snowAmt = Ly.snow ? Math.max(0, Math.min(1, (.22 + fbm(x / 40, y / 40) * .18 - depth) * 7)) * (steep > .34 && lit < .45 ? .25 : 1) : 0;
+          const sc = [mix(Ly.shade[0], Ly.lit[0], lit), mix(Ly.shade[1], Ly.lit[1], lit), mix(Ly.shade[2], Ly.lit[2], lit)];
+          const k = Math.min(1, lit * 1.1) * .8 + .2;
+          const rc = [mix(Ly.rock[0] * .7, Ly.lit[0] * .9, k * k), mix(Ly.rock[1] * .7, Ly.lit[1] * .85, k * k), mix(Ly.rock[2] * .7, Ly.lit[2] * .8, k * k)];
+          const col = [mix(rc[0], sc[0], snowAmt), mix(rc[1], sc[1], snowAmt), mix(rc[2], sc[2], snowAmt)];
+          const hz = Ly.haze + Math.max(0, .2 - depth) * .5;
+          r = mix(col[0], 220, hz); g = mix(col[1], 186, hz); b = mix(col[2], 200, hz);
+        }
+        const i = (y * w + x) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  draw();
+  let tm; addEventListener("resize", () => { clearTimeout(tm); tm = setTimeout(draw, 150); });
+})();
+
+// The screenshot inside the editor: a redwood grove in evening light.
+(() => {
+  const c = document.getElementById("forest"), ctx = c.getContext("2d");
+  function draw() {
+    const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#3a3226"); g.addColorStop(.5, "#5b4a32"); g.addColorStop(1, "#2a2219");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    const trunks = [[.06, 30, .3], [.17, 18, .5], [.27, 46, .9], [.41, 22, .45], [.55, 70, 1], [.7, 26, .55], [.82, 52, .85], [.95, 20, .4]];
+    trunks.forEach(([x, tw, near]) => {
+      const X = x * w, W = tw * (w / 1040) * 1.4, tg = ctx.createLinearGradient(X - W / 2, 0, X + W / 2, 0);
+      tg.addColorStop(0, `rgba(${70 + near * 40},${38 + near * 20},${24 + near * 10},1)`); tg.addColorStop(.35, `rgba(${150 + near * 60},${80 + near * 30},${50 + near * 10},1)`); tg.addColorStop(1, `rgba(${40 + near * 20},${24 + near * 10},${16},1)`);
+      ctx.fillStyle = tg; ctx.fillRect(X - W / 2, 0, W, h);
+      ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1;
+      for (let i = 0; i < W / 4; i++) { const xx = X - W / 2 + h2(x * 99, i) * W; ctx.beginPath(); ctx.moveTo(xx, 0); ctx.lineTo(xx + (h2(i, x) - .5) * 6, h); ctx.stroke(); }
+    });
+    const light = ctx.createLinearGradient(w, 0, 0, h); light.addColorStop(0, "rgba(255,200,120,.35)"); light.addColorStop(.6, "rgba(255,200,120,0)");
+    ctx.fillStyle = light; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(60,90,40,.7)"; for (let i = 0; i < 160; i++) { ctx.beginPath(); ctx.arc(h2(i, 3) * w, h - h2(i, 7) * 30, 6 + h2(i, 9) * 14, 0, 7); ctx.fill(); }
+  }
+  draw();
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+})();
+</script>
+</body>
+</html>

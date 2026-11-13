@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f1f1f">
+<title>Shipkit — launch your SaaS in days</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-800-normal.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #1f1f1f;
+  --surface: #161616;
+  --ink: #ececec;
+  --ink-2: rgb(170 170 170);
+  --ink-3: rgb(128 128 128);
+  --hairline: rgb(255 255 255 / .12);
+  --accent: #fcc419;
+  --accent-ink: #1d1400;
+  --mark: #e9dccb;
+  --mark-ink: #2b1b05;
+  --good: #7bd88f;
+  --font-display: "Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); color-scheme: dark; }
+body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.nav { max-width: 1240px; height: 88px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 64px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 800 22px/1 var(--font-display); letter-spacing: -0.02em; }
+.logo svg { width: 26px; height: 26px; }
+.links { display: flex; gap: 40px; font: 500 16px/1 var(--font-ui); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.hint { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; height: 48px; padding-inline: 16px; border-radius: 12px;
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+kbd { display: inline-grid; place-items: center; min-width: 28px; height: 28px; border-radius: 6px; font: 500 13px/1 var(--font-mono); color: var(--ink);
+  background: #262626; box-shadow: inset 0 0 0 1px var(--hairline), inset 0 -2px 0 rgb(0 0 0 / .5); }
+
+.hero { max-width: 1240px; margin-inline: auto; padding: 56px var(--gutter) 120px; display: grid; grid-template-columns: 1fr 1.05fr; align-items: center; gap: 48px; }
+.copy { display: flex; flex-direction: column; align-items: flex-start; }
+.laurel { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); }
+.laurel svg { width: 28px; height: 52px; }
+.laurel svg:last-child { scale: -1 1; }
+.laurel div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.laurel small { font: 600 12px/1 var(--font-ui); }
+.laurel b { font: 800 20px/1 var(--font-display); color: var(--ink); }
+h1 { margin-top: 28px; font: 800 clamp(2.75rem, 5.4vw, 4.5rem)/1.08 var(--font-display); letter-spacing: -0.03em; }
+.hl { display: inline-block; margin-top: 4px; padding: 0 12px 4px; background: var(--mark); color: var(--mark-ink); border-radius: 4px; }
+.lead { margin-top: 28px; max-width: 32rem; font-size: 19px; line-height: 1.6; color: var(--ink-2); }
+.cta { margin-top: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 280px; height: 56px; border-radius: 10px;
+  background: var(--accent); color: var(--accent-ink); font: 600 17px/1 var(--font-ui);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .35); transition: filter 150ms var(--ease), transform 150ms var(--ease); }
+.cta:hover { filter: brightness(1.05); }
+.cta:active { transform: scale(.97); }
+.cta svg { width: 18px; height: 18px; }
+.deal { margin-top: 16px; display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-2); }
+.deal svg { width: 18px; height: 18px; stroke: var(--good); }
+.deal b { color: var(--good); font-weight: 500; }
+
+/* the stack blob (signature: hand-drawn outline + highlight block) */
+.stack { position: relative; padding: 64px 48px 48px; }
+.blob { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.items { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 40px 32px; }
+.item { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: start; }
+.tile { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; box-shadow: inset 0 1px 0 rgb(255 255 255 / .2); }
+.tile svg { width: 26px; height: 26px; }
+.item b { display: block; font: 700 24px/1.1 var(--font-display); letter-spacing: -0.01em; }
+.item ul { margin: 8px 0 0; padding-left: 16px; color: var(--ink-2); font-size: 16px; line-height: 1.5; }
+.more { position: relative; margin-top: 40px; text-align: center; font: 500 17px/1.5 var(--font-ui); color: var(--ink); }
+.more span { color: var(--ink-2); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 640ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; }
+.copy > :nth-child(4) { animation-delay: 210ms; } .copy > :nth-child(5) { animation-delay: 280ms; }
+.stack { animation: rise 800ms 360ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .hint { display: none; }
+  .hero { grid-template-columns: 1fr; padding-top: 32px; padding-bottom: 64px; }
+  .cta { width: 100%; }
+  .stack { padding: 48px 24px 32px; }
+  .items { grid-template-columns: 1fr; gap: 28px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24"><path d="M13.5 2 4 14h6.5L9 22l11-13h-7z" fill="#fcc419"/></svg>Shipkit</a>
+    <div class="links"><a href="#">Pricing</a><a href="#">Demo</a><a href="#">Wall of love</a></div>
+    <span class="hint">Press <kbd>L</kbd> for the leaderboard</span>
+  </nav>
+
+  <section class="hero">
+    <div class="copy">
+      <div class="laurel" aria-label="Product of the day, second place">
+        <svg viewBox="0 0 28 52" fill="currentColor" aria-hidden="true"><path d="M22 50C10 44 4 32 6 18" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="9" cy="40" rx="5" ry="2.2" transform="rotate(-40 9 40)"/><ellipse cx="6" cy="31" rx="5" ry="2.2" transform="rotate(-70 6 31)"/><ellipse cx="6" cy="22" rx="5" ry="2.2" transform="rotate(-95 6 22)"/><ellipse cx="9" cy="13" rx="4.4" ry="2" transform="rotate(-120 9 13)"/><ellipse cx="14" cy="45" rx="4.4" ry="2" transform="rotate(-10 14 45)"/></svg>
+        <div><small>Product of the day</small><b>2nd</b></div>
+        <svg viewBox="0 0 28 52" fill="currentColor" aria-hidden="true"><path d="M22 50C10 44 4 32 6 18" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="9" cy="40" rx="5" ry="2.2" transform="rotate(-40 9 40)"/><ellipse cx="6" cy="31" rx="5" ry="2.2" transform="rotate(-70 6 31)"/><ellipse cx="6" cy="22" rx="5" ry="2.2" transform="rotate(-95 6 22)"/><ellipse cx="9" cy="13" rx="4.4" ry="2" transform="rotate(-120 9 13)"/><ellipse cx="14" cy="45" rx="4.4" ry="2" transform="rotate(-10 14 45)"/></svg>
+      </div>
+      <h1>Launch your SaaS in days, <span class="hl">not weekends</span></h1>
+      <p class="lead">The Next.js starter with auth, payments, emails and SEO already wired, so your first weekend goes into the product instead of the plumbing.</p>
+      <a class="cta" href="#"><svg viewBox="0 0 24 24"><path d="M13.5 2 4 14h6.5L9 22l11-13h-7z" fill="currentColor"/></svg>Get Shipkit</a>
+      <p class="deal"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1"/></svg><b>$100 off</b> for the next 40 customers (12 left)</p>
+    </div>
+
+    <div class="stack" aria-label="What's included">
+      <svg class="blob" viewBox="0 0 600 560" preserveAspectRatio="none" fill="none" aria-hidden="true">
+        <path d="M120 40C220 6 420 0 520 40s82 150 70 260-20 200-120 236S200 566 110 528 6 410 14 300 30 72 120 40Z" stroke="rgb(255 255 255 / .38)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="items">
+        <div class="item"><span class="tile" style="background:#3b82f6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span><div><b>Auth</b><ul><li>Social login</li><li>Magic links</li></ul></div></div>
+        <div class="item"><span class="tile" style="background:#7c6cf0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span><div><b>Payments</b><ul><li>Checkout</li><li>Webhooks</li></ul></div></div>
+        <div class="item"><span class="tile" style="background:#f5f5f5"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><div><b>Emails</b><ul><li>DNS records</li><li>Lands in the inbox</li></ul></div></div>
+        <div class="item"><span class="tile" style="background:#14b8a6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg></span><div><b>UI kit</b><ul><li>40 components</li><li>Animations</li></ul></div></div>
+      </div>
+      <p class="more">+ all the boring stuff <span>(SEO tags, API routes, support chat)</span></p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

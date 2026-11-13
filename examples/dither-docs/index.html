@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Motion — Grainkit docs</title>
+<script>
+// set the theme before first paint: saved choice, else the system's
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; else if (matchMedia("(prefers-color-scheme: light)").matches) document.documentElement.dataset.theme = "light"; } catch {}
+</script>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #000000;
+  --surface: #0e0e0f;
+  --surface-2: #1a1a1c;
+  --surface-3: #242427;
+  --line: rgb(255 255 255 / .1);
+  --line-2: rgb(255 255 255 / .16);
+  --ink: #ededed;
+  --ink-2: #a1a1a6;
+  --ink-3: #8a8a90;
+  --dot: #8f9bff;
+  --dot-ground: #111112;
+  --link: #a9b3ff;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --canvas: #ffffff;
+  --surface: #f7f7f8;
+  --surface-2: #efeff1;
+  --surface-3: #e4e4e8;
+  --line: rgb(0 0 0 / .1);
+  --line-2: rgb(0 0 0 / .18);
+  --ink: #17171a;
+  --ink-2: #5c5c63;
+  --ink-3: #6c6c74;
+  --dot: #4a57d6;
+  --dot-ground: #f1f1f4;
+  --link: #3b47c4;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); scroll-padding-top: 96px; }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, ol, pre { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+::selection { background: color-mix(in oklab, var(--dot) 40%, transparent); }
+:focus-visible { outline: 2px solid var(--dot); outline-offset: 2px; border-radius: 8px; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: var(--ink); color: var(--canvas); font-size: 14px; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- floating pill nav ---------- */
+.top { position: sticky; top: 0; z-index: 20; padding: 8px var(--gutter) 0; display: flex; justify-content: center; }
+.bar { width: min(736px, 100%); height: 48px; padding: 0 8px 0 18px; display: flex; align-items: center; gap: 6px; border-radius: 999px; background: color-mix(in oklab, var(--canvas) 86%, transparent); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+.logo { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-right: 12px; font: 500 15px/1 var(--font-mono); }
+.logo svg { width: 18px; height: 18px; color: var(--dot); }
+.bar nav { display: flex; gap: 2px; font-size: 15px; font-weight: 500; }
+.bar nav a { display: inline-flex; align-items: center; height: 34px; padding-inline: 12px; border-radius: 999px; color: var(--ink-2); transition: color 150ms var(--ease), background 150ms var(--ease); }
+.bar nav a:hover { color: var(--ink); }
+.bar nav a[aria-current] { background: var(--surface-3); color: var(--ink); }
+.bar .sp { flex: 1; }
+.search { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding-inline: 12px 14px; border-radius: 999px; border: 1px solid var(--line); font-size: 15px; color: var(--ink-2); transition: border-color 150ms var(--ease); }
+.search:hover { border-color: var(--line-2); }
+.stars { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding-inline: 10px; font-size: 14px; color: var(--ink-2); }
+.icon-btn { width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: 999px; color: var(--ink-2); transition: background 150ms var(--ease), color 150ms var(--ease); }
+.icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ---------- three columns ---------- */
+.shell { max-width: 1320px; margin: 0 auto; padding: 40px var(--gutter) 120px; display: grid; grid-template-columns: 200px minmax(0, 672px) 208px; justify-content: space-between; gap: 48px; }
+.side { position: sticky; top: 96px; align-self: start; font-size: 15px; }
+.side details { margin-bottom: 4px; }
+.side summary { display: flex; align-items: center; gap: 10px; min-height: 34px; padding-inline: 8px; border-radius: 8px; color: var(--ink-2); cursor: pointer; list-style: none; transition: color 150ms var(--ease); }
+.side summary::-webkit-details-marker { display: none; }
+.side summary:hover { color: var(--ink); }
+.side summary svg { transition: rotate 150ms var(--ease); }
+.side details[open] summary svg { rotate: 90deg; }
+.side summary span { margin-left: auto; font-size: 13px; color: var(--ink-3); }
+.side details ul { padding: 2px 0 6px 26px; }
+.side h2 { margin: 24px 0 6px; padding-inline: 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.side li a { display: flex; align-items: center; min-height: 34px; padding-inline: 8px; border-radius: 8px; color: var(--ink-2); transition: color 150ms var(--ease), background 150ms var(--ease); }
+.side li a:hover { color: var(--ink); }
+.side li a[aria-current] { background: var(--surface-2); color: var(--ink); font-weight: 500; }
+.menu { display: none; }
+
+.doc-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.doc h1 { font-size: 40px; font-weight: 600; line-height: 1.1; letter-spacing: -0.03em; }
+.actions { display: flex; gap: 6px; padding-top: 6px; }
+.split { display: inline-flex; border-radius: 999px; background: var(--surface-2); }
+.split button { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding-inline: 14px; font-size: 14px; font-weight: 500; border-radius: 999px; transition: background 150ms var(--ease); }
+.split button:hover { background: var(--surface-3); }
+.split button + button { padding-inline: 8px 10px; border-left: 1px solid var(--line); border-radius: 0 999px 999px 0; }
+.actions .icon-btn { background: var(--surface-2); color: var(--ink); }
+.actions .icon-btn:hover { background: var(--surface-3); }
+.sub { margin-top: 10px; font-size: 17px; color: var(--ink-2); }
+.doc > p, .doc section > p { margin-top: 24px; max-width: 66ch; }
+code { font: 400 14px/1 var(--font-mono); padding: 4px 6px; border-radius: 6px; background: var(--surface-2); }
+.doc a.inl { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+
+/* the demo block */
+.demo { margin-top: 32px; }
+.demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--surface-2); }
+.seg button { height: 30px; padding-inline: 12px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--ink-2); transition: background 150ms var(--ease), color 150ms var(--ease); }
+.seg button[aria-selected="true"] { background: var(--canvas); color: var(--ink); }
+.tools { display: flex; gap: 4px; }
+.tools button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding-inline: 10px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--ink-2); transition: color 150ms var(--ease), background 150ms var(--ease); }
+.tools button:hover { color: var(--ink); background: var(--surface-2); }
+.tools button[aria-pressed="true"] { color: var(--ink); }
+.stage { margin-top: 12px; border-radius: 16px; overflow: hidden; background: var(--dot-ground); border: 1px solid var(--line); }
+#dither { display: block; width: 100%; height: 400px; transition: height 420ms var(--ease); }
+.stage.tall #dither { height: 560px; }
+pre { padding: 20px; overflow-x: auto; font: 400 14px/1.7 var(--font-mono); color: var(--ink); tab-size: 2; }
+pre .c { color: var(--ink-3); }
+pre .k { color: var(--link); }
+.still { margin-top: 10px; font-size: 14px; color: var(--ink-3); min-height: 22px; }
+
+.doc section { padding-top: 56px; }
+.doc h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
+.doc h2 a:hover::after { content: " #"; color: var(--ink-3); }
+.rates { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 15px; }
+.rates table { width: 100%; border-collapse: collapse; }
+.rates th, .rates td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+.rates tr:last-child td { border-bottom: 0; }
+.rates th { font-size: 13px; font-weight: 500; color: var(--ink-2); background: var(--surface); }
+.rates td:nth-child(n+2) { font-family: var(--font-mono); font-size: 14px; }
+.codeblock { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.pager { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; font-size: 15px; }
+.pager a { display: grid; gap: 2px; min-height: 44px; }
+.pager small { font-size: 13px; color: var(--ink-3); }
+.pager a:last-child { text-align: right; }
+.pager a:hover b { color: var(--link); }
+.pager b { font-weight: 500; transition: color 150ms var(--ease); }
+
+.toc { position: sticky; top: 96px; align-self: start; font-size: 14px; }
+.toc h2 { font-size: 13px; font-weight: 500; color: var(--ink-2); margin-bottom: 8px; }
+.toc li a { display: flex; align-items: center; min-height: 28px; color: var(--ink-2); transition: color 150ms var(--ease); }
+.toc li a:hover, .toc li a.on { color: var(--ink); }
+.toc .md { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink-2); }
+.toc .md:hover { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 1180px) {
+  .shell { grid-template-columns: 200px minmax(0, 1fr); }
+  .toc { display: none; }
+}
+@media (max-width: 810px) {
+  .shell { grid-template-columns: minmax(0, 1fr); padding-top: 24px; gap: 20px; }
+  .side { position: static; }
+  .side .tree { display: none; }
+  .menu { display: block; border: 1px solid var(--line); border-radius: 12px; }
+  .menu > summary { min-height: 44px; padding-inline: 14px; color: var(--ink); font-weight: 500; }
+  .menu > summary span { font-size: 14px; color: var(--ink-2); }
+  .menu ul { padding: 0 6px 8px; }
+  .menu li a { min-height: 44px; }
+  .bar nav a:not([aria-current]), .stars, .search span { display: none; }
+  .search { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .bar { height: 56px; }
+  .bar nav a { height: 44px; }
+  .split button + button { min-width: 44px; justify-content: center; }
+  .doc h1 { font-size: 34px; }
+  .doc-head { flex-direction: column; }
+  .actions { padding-top: 0; }
+  #dither { height: 300px; }
+  .stage.tall #dither { height: 440px; }
+  .tools button span { display: none; }
+  .tools button { min-width: 44px; min-height: 44px; justify-content: center; }
+  .seg button { height: 44px; padding-inline: 16px; }
+  .doc h2 a { display: block; padding-block: 8px; }
+  .icon-btn, .split button { height: 44px; }
+  .icon-btn { width: 44px; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="bar">
+    <a class="logo" href="#" aria-label="Grainkit home">
+      <svg viewBox="0 0 18 18" aria-hidden="true" fill="currentColor"><path d="M0 0h4v4H0zM7 0h4v4H7zM0 7h4v4H0zM14 7h4v4h-4zM7 14h4v4H7zM14 14h4v4h-4zM7 7h4v4H7z"/></svg>
+      grainkit
+    </a>
+    <nav aria-label="Main"><a href="#">Docs</a><a href="#">Examples</a><a href="#" aria-current="page">Engine</a></nav>
+    <span class="sp"></span>
+    <button class="search" type="button" aria-label="Search the docs"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span>Search</span></button>
+    <a class="stars" href="#" aria-label="141 stars on the repository"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1.8 1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/></svg><span class="num">141</span></a>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch to light theme"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></svg></button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="side" aria-label="Docs sections">
+    <details class="menu">
+      <summary>Engine <span>· Motion</span></summary>
+      <ul><li><a href="#">Dither engine</a></li><li><a href="#">Write your own dither</a></li><li><a href="#">Palettes</a></li><li><a href="#">Pixel scale</a></li><li><a href="#" aria-current="page">Motion</a></li><li><a href="#">Performance</a></li><li><a href="#">Export</a></li></ul>
+    </details>
+    <div class="tree">
+      <details><summary><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>Text<span class="num">4</span></summary>
+        <ul><li><a href="#">Dither text</a></li><li><a href="#">Scramble</a></li><li><a href="#">Reveal</a></li><li><a href="#">Counter</a></li></ul></details>
+      <details><summary><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg>Images<span class="num">5</span></summary>
+        <ul><li><a href="#">Dither image</a></li><li><a href="#">Halftone</a></li><li><a href="#">Duotone</a></li><li><a href="#">Mask</a></li><li><a href="#">Video</a></li></ul></details>
+      <h2>Engine</h2>
+      <ul><li><a href="#">Dither engine</a></li><li><a href="#">Write your own dither</a></li><li><a href="#">Palettes</a></li><li><a href="#">Pixel scale</a></li><li><a href="#" aria-current="page">Motion</a></li><li><a href="#">Performance</a></li><li><a href="#">Export</a></li></ul>
+    </div>
+  </aside>
+
+  <main class="doc" id="main">
+    <div class="doc-head">
+      <h1>Motion</h1>
+      <div class="actions">
+        <div class="split"><button type="button" id="copy"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M3 10.5V4a1.5 1.5 0 0 1 1.5-1.5H11"/></svg><span id="copy-label">Copy page</span></button><button type="button" aria-label="More copy options"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button></div>
+        <a class="icon-btn" href="#" aria-label="Previous page: Pixel scale"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m10 4-4 4 4 4"/></svg></a>
+        <a class="icon-btn" href="#" aria-label="Next page: Performance"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg></a>
+      </div>
+    </div>
+    <p class="sub">How animated dithers run, pause and hold still, including under reduced motion.</p>
+    <p>Animated dithers in Grainkit are slow on purpose. A background should drift, not perform. Every animated component follows the same four rules, and they live in <code>grain-core</code>, so a dither you write yourself gets them for free.</p>
+
+    <div class="demo">
+      <div class="demo-bar">
+        <div class="seg" role="tablist" aria-label="Demo view">
+          <button role="tab" id="tab-preview" aria-selected="true" aria-controls="pane-preview">Preview</button>
+          <button role="tab" id="tab-code" aria-selected="false" aria-controls="pane-code" tabindex="-1">Code</button>
+        </div>
+        <div class="tools">
+          <button type="button" id="replay"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v2.8h2.8"/></svg><span>Replay</span></button>
+          <button type="button" id="expand" aria-pressed="false"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10"/></svg><span>Expand</span></button>
+        </div>
+      </div>
+      <div class="stage" id="stage">
+        <div id="pane-preview" role="tabpanel" aria-labelledby="tab-preview"><canvas id="dither" role="img" aria-label="A slow field of periwinkle dither cells drifting from left to right"></canvas></div>
+        <div id="pane-code" role="tabpanel" aria-labelledby="tab-code" hidden tabindex="0"><pre><span class="k">import</span> { DitherField } <span class="k">from</span> "grainkit";
+
+<span class="k">export default function</span> Hero() {
+  <span class="k">return</span> (
+    &lt;DitherField
+      palette="periwinkle"
+      cell={6}          <span class="c">// px per dot</span>
+      speed={0.12}      <span class="c">// cells per second</span>
+      fps={12}          <span class="c">// redraws, not animation frames</span>
+      pauseOffscreen    <span class="c">// default: true</span>
+    /&gt;
+  );
+}</pre></div>
+      </div>
+      <p class="still" id="still" aria-live="polite"></p>
+    </div>
+
+    <section id="when">
+      <h2><a href="#when">When a dither moves</a></h2>
+      <p>A dither animates only while it is on screen, the tab is visible and the visitor hasn't asked for less motion. Scroll it away and the loop stops; scroll back and it picks up from the same frame, so there is never a jump.</p>
+    </section>
+    <section id="reduced">
+      <h2><a href="#reduced">Reduced motion</a></h2>
+      <p>With <code>prefers-reduced-motion: reduce</code>, every dither draws one still frame and stays there. The frame is chosen from the middle of the loop, where the pattern is most balanced, and Replay swaps it for another still instead of playing.</p>
+    </section>
+    <section id="speed">
+      <h2><a href="#speed">Speed and frame rate</a></h2>
+      <p>Dots are large, so they don't need sixty redraws a second. The defaults keep a full-width hero under 1 ms of work per frame on a mid-range phone.</p>
+      <div class="rates"><table>
+        <thead><tr><th scope="col">Use</th><th scope="col">speed</th><th scope="col">fps</th></tr></thead>
+        <tbody><tr><td>Page background</td><td>0.08</td><td>8</td></tr><tr><td>Hero or card art</td><td>0.12</td><td>12</td></tr><tr><td>Loading state</td><td>0.4</td><td>24</td></tr></tbody>
+      </table></div>
+    </section>
+    <section id="loops">
+      <h2><a href="#loops">Your own loops</a></h2>
+      <p>Use <code>useDitherClock</code> instead of <code>requestAnimationFrame</code>. It gives you a time value that already respects visibility, reduced motion and the frame rate, so your draw function stays pure.</p>
+      <div class="codeblock"><pre><span class="k">const</span> t = useDitherClock({ fps: 12 });
+draw(ctx, (x, y) =&gt; noise(x * .04 + t * .12, y * .04) &gt; bayer(x, y));</pre></div>
+    </section>
+    <section id="easing">
+      <h2><a href="#easing">Easing and timing</a></h2>
+      <p>Reveals use one curve, <code>cubic-bezier(.22, 1, .36, 1)</code>, over 640 ms. Drift has no easing at all: constant speed reads as weather, while eased loops read as a spinner. See <a class="inl" href="#">Performance</a> for budgets.</p>
+    </section>
+
+    <nav class="pager" aria-label="Pages"><a href="#"><small>Previous</small><b>Pixel scale</b></a><a href="#"><small>Next</small><b>Performance</b></a></nav>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <h2>On this page</h2>
+    <ul><li><a href="#when">When a dither moves</a></li><li><a href="#reduced">Reduced motion</a></li><li><a href="#speed">Speed and frame rate</a></li><li><a href="#loops">Your own loops</a></li><li><a href="#easing">Easing and timing</a></li></ul>
+    <a class="md" href="#"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4zM9.5 1.5V5H13M6.5 8.5h4M6.5 11h4"/></svg>View as Markdown</a>
+  </aside>
+</div>
+
+<script>
+// ---- the dither: value noise thresholded by an 8×8 Bayer matrix, redrawn 12 times a second ----
+(() => {
+  const cv = document.getElementById("dither"), cx = cv.getContext("2d"), still = document.getElementById("still");
+  const B = [0,32,8,40,2,34,10,42,48,16,56,24,50,18,58,26,12,44,4,36,14,46,6,38,60,28,52,20,62,30,54,22,3,35,11,43,1,33,9,41,51,19,59,27,49,17,57,25,15,47,7,39,13,45,5,37,63,31,55,23,61,29,53,21];
+  const CELL = 5, FPS = 12, SPEED = 0.12;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const hash = (x, y) => { let n = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
+  const sm = (t) => t * t * (3 - 2 * t);
+  function noise(x, y) { const xi = Math.floor(x), yi = Math.floor(y), u = sm(x - xi), v = sm(y - yi);
+    const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+  let t = 0, last = 0, raf = 0, onscreen = true, cols = 0, rows = 0, dpr = 1;
+  function size() { dpr = Math.min(devicePixelRatio || 1, 2); cv.width = Math.round(cv.clientWidth * dpr); cv.height = Math.round(cv.clientHeight * dpr); cols = Math.ceil(cv.clientWidth / CELL); rows = Math.ceil(cv.clientHeight / CELL); draw(); }
+  function draw() {
+    const css = getComputedStyle(document.documentElement);
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.fillStyle = css.getPropertyValue("--dot-ground"); cx.fillRect(0, 0, cv.clientWidth, cv.clientHeight);
+    cx.fillStyle = css.getPropertyValue("--dot");
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const v = noise(x * .035 + t * SPEED, y * .035 + t * SPEED * .3) * .62 + noise(x * .11 - t * SPEED * .6, y * .11) * .38;
+      if ((v - .5) * 2.6 + .5 > (B[(y & 7) * 8 + (x & 7)] + .5) / 64) cx.fillRect(x * CELL, y * CELL, CELL - 1, CELL - 1);
+    }
+  }
+  function loop(now) { raf = requestAnimationFrame(loop); if (now - last < 1000 / FPS) return; t += (now - last > 500 ? 1000 / FPS : now - last) / 1000 * 10; last = now; draw(); }
+  function sync() {
+    cancelAnimationFrame(raf); raf = 0;
+    const run = onscreen && !document.hidden && !reduce.matches && !document.getElementById("pane-preview").hidden;
+    if (run) { last = performance.now(); raf = requestAnimationFrame(loop); still.textContent = ""; }
+    else if (reduce.matches) { still.textContent = "Reduced motion is on: showing one still frame."; draw(); }
+  }
+  new IntersectionObserver(([e]) => { onscreen = e.isIntersecting; sync(); }).observe(cv);
+  document.addEventListener("visibilitychange", sync); reduce.addEventListener("change", sync);
+  new ResizeObserver(size).observe(cv);
+  addEventListener("themechange", draw);
+  document.getElementById("replay").addEventListener("click", () => { t = reduce.matches ? t + 40 : 0; draw(); sync(); });
+  const stage = document.getElementById("stage"), expand = document.getElementById("expand");
+  expand.addEventListener("click", () => { const on = expand.getAttribute("aria-pressed") !== "true"; expand.setAttribute("aria-pressed", on); stage.classList.toggle("tall", on); expand.querySelector("span").textContent = on ? "Collapse" : "Expand"; });
+  // preview / code tabs
+  const tabs = [...document.querySelectorAll('.seg [role="tab"]')];
+  const pick = (i, focus) => { tabs.forEach((b, j) => { b.setAttribute("aria-selected", i === j); b.tabIndex = i === j ? 0 : -1; document.getElementById(b.getAttribute("aria-controls")).hidden = i !== j; }); if (focus) tabs[i].focus(); sync(); if (i === 0) size(); };
+  tabs.forEach((b, i) => { b.addEventListener("click", () => pick(i)); b.addEventListener("keydown", (e) => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); pick(1 - i, true); } }); });
+  size(); sync();
+})();
+
+// theme toggle
+(() => {
+  const root = document.documentElement, btn = document.getElementById("theme"), meta = document.querySelector('meta[name="theme-color"]');
+  const paint = () => { const dark = root.dataset.theme !== "light"; btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme"); meta.content = dark ? "#000000" : "#ffffff"; };
+  btn.addEventListener("click", () => { root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light"; try { localStorage.setItem("theme", root.dataset.theme); } catch {} paint(); dispatchEvent(new Event("themechange")); });
+  paint();
+})();
+
+// copy page as text
+document.getElementById("copy").addEventListener("click", async () => {
+  const label = document.getElementById("copy-label");
+  try { await navigator.clipboard.writeText(document.getElementById("main").innerText); label.textContent = "Copied"; } catch { label.textContent = "Press Ctrl+C"; }
+  setTimeout(() => (label.textContent = "Copy page"), 1600);
+});
+
+// highlight the section in view
+(() => {
+  const links = [...document.querySelectorAll(".toc li a")];
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((l) => l.classList.toggle("on", l.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-20% 0px -60% 0px" });
+  document.querySelectorAll(".doc section").forEach((s) => io.observe(s));
+})();
+</script>
+</body>
+</html>

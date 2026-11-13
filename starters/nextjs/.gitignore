@@ -1,0 +1,4 @@
+node_modules
+.next
+majestic-check
+next-env.d.ts

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#191919">
+<title>Reelcast — polished screen demos from your Mac</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #191919;
+  --surface: #232323;
+  --surface-2: #2c2c2c;
+  --ink: #f4f4f4;
+  --ink-2: rgb(168 168 168);
+  --ink-3: rgb(128 128 128);
+  --hairline: rgb(255 255 255 / .1);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / .07);
+  --blue: #2b7bff;
+  --blue-light: #4e95ff;
+  --hl-bg: #a9d3ff;
+  --hl-ink: #1b5fd8;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); color-scheme: dark; }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--blue-light); outline-offset: 3px; }
+
+/* floating pill nav */
+.nav-wrap { position: sticky; top: 16px; z-index: 50; display: flex; justify-content: center; padding-inline: var(--gutter); }
+.nav { display: flex; align-items: center; gap: 4px; height: 52px; padding: 6px; border-radius: 18px; background: rgb(35 35 35 / .85); backdrop-filter: blur(10px);
+  box-shadow: var(--glass-edge), 0 0 0 1px var(--hairline); }
+.logo { display: inline-flex; align-items: center; gap: 10px; padding-inline: 8px 16px; font: 600 16px/1 var(--font-ui); letter-spacing: -0.01em; }
+.logo svg { width: 26px; height: 26px; }
+.links { display: flex; font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a { padding: 10px 12px; border-radius: 10px; transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding-inline: 16px; border-radius: 999px; font: 600 15px/1 var(--font-ui);
+  transition: background-color 150ms var(--ease), filter 150ms var(--ease), transform 150ms var(--ease); }
+.pill:active { transform: scale(.97); }
+.pill svg { width: 16px; height: 16px; }
+.pill-line { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
+.pill-line:hover { background: rgb(255 255 255 / .06); }
+.pill-blue { background: linear-gradient(180deg, var(--blue-light), var(--blue)); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), inset 0 0 0 1px rgb(0 40 120 / .3); }
+.pill-blue:hover { filter: brightness(1.06); }
+.pill-dark { background: var(--surface-2); box-shadow: var(--glass-edge), inset 0 0 0 1px var(--hairline); }
+.pill-dark:hover { background: #343434; }
+.pill-lg { height: 52px; padding-inline: 24px; font-size: 17px; }
+
+.hero { max-width: 1100px; margin-inline: auto; padding: 96px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.badge { white-space: nowrap; max-width: 100%; display: inline-flex; align-items: center; gap: 10px; height: 32px; padding: 0 12px 0 4px; border-radius: 999px; background: rgb(255 255 255 / .03); box-shadow: inset 0 0 0 1px var(--hairline); font: 500 14px/1 var(--font-ui); }
+.badge b { height: 24px; padding-inline: 8px; border-radius: 999px; background: var(--hl-bg); color: var(--hl-ink); font: 500 12px/24px var(--font-mono); }
+.badge svg { width: 14px; height: 14px; color: var(--ink-2); }
+h1 { margin-top: 32px; font: 700 clamp(2.75rem, 6.6vw, 5.25rem)/1.08 var(--font-ui); letter-spacing: -0.045em; max-width: 20ch; }
+.hl { display: inline-block; padding: 0 0.22em 0.06em; border-radius: 0.5em; background: var(--hl-bg); color: var(--hl-ink); }
+.app-icon { display: inline-grid; place-items: center; width: 0.9em; height: 0.9em; vertical-align: -0.1em; margin-inline: 0.04em; border-radius: 0.24em;
+  background: linear-gradient(160deg, #8ab8ff, #2b6bff); box-shadow: inset 0 1px 0 rgb(255 255 255 / .35); }
+.app-icon svg { width: 0.56em; height: 0.56em; }
+.lead { margin-top: 28px; max-width: 32rem; font-size: 19px; line-height: 1.55; color: var(--ink-2); }
+.actions { margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.proof { margin-top: 40px; display: flex; align-items: center; gap: 14px; text-align: left; font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.faces { display: flex; }
+.faces span { width: 32px; height: 32px; border-radius: 50%; margin-left: -8px; border: 2px solid var(--canvas); }
+.faces span:first-child { margin-left: 0; }
+
+/* editor preview */
+.stage { position: relative; margin-top: 80px; padding: 0 var(--gutter) 120px; }
+.stage::before { content: ""; position: absolute; left: 50%; top: -80px; width: 1100px; height: 360px; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 60%, rgb(60 120 255 / .22), transparent 70%); }
+.editor { position: relative; width: min(1160px, 100%); margin-inline: auto; border-radius: 18px; background: #121212; overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline), 0 40px 120px -30px rgb(0 0 0 / .9); }
+.bar { height: 44px; display: flex; align-items: center; gap: 8px; padding-inline: 16px; border-bottom: 1px solid var(--hairline); font: 500 13px/1 var(--font-ui); color: var(--ink-2); }
+.bar i { width: 12px; height: 12px; border-radius: 50%; background: #3a3a3a; }
+.bar span { margin-left: 16px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .export { margin-left: auto; height: 28px; font-size: 13px; padding-inline: 12px; }
+.work { display: grid; grid-template-columns: 1fr 280px; }
+.canvas { position: relative; padding: 32px; background: linear-gradient(135deg, #f7c38b, #ef8a6a 50%, #d9617a); aspect-ratio: 16 / 9.2; }
+.shot { position: absolute; inset: 32px 32px 32px 32px; border-radius: 12px; background: #fff; color: #111; overflow: hidden; box-shadow: 0 20px 50px -20px rgb(0 0 0 / .5); }
+.shot .tb { height: 32px; display: flex; align-items: center; gap: 6px; padding-inline: 12px; background: #f4f4f5; border-bottom: 1px solid #e5e5e5; }
+.shot .tb i { width: 8px; height: 8px; border-radius: 50%; background: #d4d4d8; }
+.shot .content { padding: 24px; display: grid; grid-template-columns: 160px 1fr; gap: 20px; }
+.shot .nav-l { display: flex; flex-direction: column; gap: 10px; }
+.shot .nav-l i { height: 10px; border-radius: 5px; background: #eee; }
+.shot .nav-l i:first-child { background: #dbe7ff; }
+.shot h5 { margin: 0; font: 600 20px/1.2 var(--font-ui); letter-spacing: -0.02em; }
+.shot .rows { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.shot .rows div { height: 36px; border-radius: 8px; background: #f6f6f7; display: flex; align-items: center; padding-inline: 12px; font-size: 13px; color: #555; }
+.shot .rows .target { background: #eaf2ff; box-shadow: inset 0 0 0 1.5px #2b7bff; color: #1b5fd8; font-weight: 500; }
+.cursor { position: absolute; left: 58%; top: 45%; width: 22px; height: 22px; }
+.cam { position: absolute; left: 48px; bottom: 44px; width: 96px; height: 96px; border-radius: 50%; border: 3px solid #fff; background: radial-gradient(circle at 50% 38%, #f3d2b8 0 22%, transparent 23%), radial-gradient(circle at 50% 100%, #3a4a6b 0 45%, transparent 46%), #c9b8a6; box-shadow: 0 10px 30px -8px rgb(0 0 0 / .5); }
+.side { border-left: 1px solid var(--hairline); padding: 20px; display: flex; flex-direction: column; gap: 20px; font-size: 14px; }
+.side h6 { margin: 0 0 10px; font: 500 12px/1 var(--font-ui); color: var(--ink-3); }
+.opt { display: flex; justify-content: space-between; align-items: center; height: 36px; padding-inline: 12px; border-radius: 10px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); }
+.opt b { font-weight: 500; color: var(--hl-bg); }
+.swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.swatches i { aspect-ratio: 1; border-radius: 8px; }
+.swatches i.on { box-shadow: 0 0 0 2px #121212, 0 0 0 4px var(--blue-light); }
+.slider { position: relative; height: 4px; border-radius: 2px; background: var(--surface-2); }
+.slider::before { content: ""; position: absolute; inset: 0 40% 0 0; border-radius: 2px; background: var(--blue-light); }
+.slider::after { content: ""; position: absolute; left: 60%; top: 50%; width: 16px; height: 16px; translate: -50% -50%; border-radius: 50%; background: #fff; }
+.timeline { border-top: 1px solid var(--hairline); padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+.ticks { display: flex; justify-content: space-between; font: 500 12px/1 var(--font-mono); color: var(--ink-3); }
+.track { position: relative; height: 40px; border-radius: 8px; background: #2a2a2a; overflow: hidden; }
+.track.clip { background: repeating-linear-gradient(90deg, #3a3020 0 60px, #45382a 60px 120px); }
+.zoom { position: absolute; top: 4px; bottom: 4px; border-radius: 6px; background: rgb(78 149 255 / .25); box-shadow: inset 0 0 0 1px rgb(78 149 255 / .6); font: 500 12px/32px var(--font-ui); color: var(--hl-bg); padding-inline: 10px; }
+.playhead { position: absolute; top: 0; bottom: 0; left: 46%; width: 2px; background: #fff; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 280ms; }
+.stage { animation: rise 800ms 380ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .nav .pill-line { display: none; }
+  .hero { padding-top: 64px; }
+  .badge { font-size: 13px; }
+  .actions { width: 100%; flex-direction: column; } .actions .pill { width: 100%; }
+  .work { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .canvas { padding: 16px; }
+  .shot { inset: 16px; }
+  .shot .content { grid-template-columns: 1fr; } .shot .nav-l { display: none; }
+  .cam { width: 64px; height: 64px; left: 24px; bottom: 24px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7aa8ff"/><stop offset="1" stop-color="#2b6bff"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#lg)"/><circle cx="12" cy="12" r="4.5" fill="#121212"/><circle cx="13.6" cy="10.4" r="1.4" fill="#fff"/></svg>Reelcast</a>
+    <div class="links"><a href="#">Features</a><a href="#">Pricing</a><a href="#">Help</a></div>
+    <a class="pill pill-line" href="#">Buy now</a>
+    <a class="pill pill-blue" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download app</a>
+  </nav>
+</div>
+
+<main id="main">
+  <section class="hero">
+    <a class="badge" href="#"><b>1.12.0</b>Added webcam background removal<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <h1>Polished screen <span class="hl">demos</span> from your <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="#121212"/><circle cx="14" cy="10" r="2" fill="#fff"/></svg></span> Mac</h1>
+    <p class="lead">Record your screen, camera and mic. Reelcast zooms on every click, cleans the audio and gives you a 4K file or a share link.</p>
+    <div class="actions">
+      <a class="pill pill-blue pill-lg" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download app</a>
+      <a class="pill pill-dark pill-lg" href="#">See how it works<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></a>
+    </div>
+    <div class="proof">
+      <div class="faces"><span style="background:linear-gradient(135deg,#a3765a,#5c3b28)"></span><span style="background:linear-gradient(135deg,#9aa5b1,#4b5563)"></span><span style="background:linear-gradient(135deg,#e7c3a1,#b07a52)"></span><span style="background:linear-gradient(135deg,#6b7280,#1f2937)"></span><span style="background:linear-gradient(135deg,#8ab4f8,#3b5bff)"></span></div>
+      <span>Loved by 1,000+ founders,<br>developers and SaaS teams</span><!-- slop-ok: placeholder count, flagged in the report -->
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Reelcast editor preview">
+    <div class="editor">
+      <div class="bar"><i></i><i></i><i></i><span>onboarding-walkthrough.reel</span><a class="pill pill-blue export" href="#">Export</a></div>
+      <div class="work">
+        <div class="canvas">
+          <div class="shot">
+            <div class="tb"><i></i><i></i><i></i></div>
+            <div class="content">
+              <div class="nav-l"><i></i><i></i><i></i><i></i><i></i></div>
+              <div><h5>Invite your team</h5><div class="rows"><div>maya@harbor.co · Admin</div><div>leo@harbor.co · Editor</div><div class="target">+ Send invites</div></div></div>
+            </div>
+          </div>
+          <svg class="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.5L10 19z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span class="cam" aria-hidden="true"></span>
+        </div>
+        <div class="side">
+          <div><h6>Zoom</h6><div class="opt">Auto zoom on clicks<b>On</b></div></div>
+          <div><h6>Background</h6><div class="swatches"><i class="on" style="background:linear-gradient(135deg,#f7c38b,#d9617a)"></i><i style="background:linear-gradient(135deg,#9be7c4,#3b82f6)"></i><i style="background:#e9e4dc"></i><i style="background:#1f2937"></i><i style="background:linear-gradient(135deg,#fda4af,#f59e0b)"></i></div></div>
+          <div><h6>Padding</h6><div class="slider"></div></div>
+          <div><h6>Audio</h6><div class="opt">Noise removal<b>Studio</b></div></div>
+        </div>
+      </div>
+      <div class="timeline">
+        <div class="ticks num"><span>0:00</span><span>0:10</span><span>0:20</span><span>0:30</span><span>0:40</span><span>0:50</span></div>
+        <div class="track clip"><span class="playhead"></span></div>
+        <div class="track"><span class="zoom" style="left:8%;width:14%">Zoom 1.6×</span><span class="zoom" style="left:40%;width:18%">Zoom 2×</span><span class="zoom" style="left:72%;width:12%">Zoom 1.4×</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

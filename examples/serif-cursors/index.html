@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Margin — one budget, two people, no spreadsheet</title>
+<style>
+/* slop-ok: overused-font, Newsreader chosen for this look; principles.md says what to use when the user has not decided */
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-italic.woff2) format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+:root {
+  --canvas: #ffffff;
+  --soft: #f6f6f4;
+  --ink: #16171a;
+  --ink-2: color-mix(in oklab, var(--ink) 64%, white);
+  --ink-3: color-mix(in oklab, var(--ink) 46%, white);
+  --hairline: rgb(22 23 26 / .09);
+  --you: #2f6bff;
+  --them: #f5c518;
+  --them-ink: #3a2c00;
+  --good: #14935a;
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--you); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- nav ---------- */
+.nav { max-width: 1200px; height: 76px; margin-inline: auto; padding-inline: var(--gutter); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 500 24px/1 var(--font-display); letter-spacing: -0.02em; }
+.logo i { width: 22px; height: 22px; border-radius: 50%; background: conic-gradient(var(--you) 0 50%, var(--them) 50% 100%); }
+.links { display: flex; gap: 32px; font-size: 15px; color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.nav-r { justify-self: end; display: flex; gap: 8px; align-items: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding-inline: 20px; border-radius: 999px; font-weight: 500; font-size: 15px;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.dark { background: var(--ink); color: #fff; }
+.btn.dark:hover { background: #2a2c31; }
+.btn.plain:hover { background: var(--soft); }
+
+/* ---------- hero copy ---------- */
+.hero { max-width: 1200px; margin-inline: auto; padding: 80px var(--gutter) 0; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.tag { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding-inline: 12px; border-radius: 999px; background: var(--soft); font-size: 14px; color: var(--ink-2); }
+.tag b { font-weight: 500; color: var(--ink); }
+h1 { margin-top: 24px; font: 400 clamp(3rem, 6.6vw, 5.5rem)/1 var(--font-display); letter-spacing: -0.03em; max-width: 16ch; }
+h1 em { font-style: italic; }
+.lead { margin-top: 24px; max-width: 42ch; font-size: 19px; color: var(--ink-2); }
+.ctas { margin-top: 32px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.btn.lg { height: 52px; padding-inline: 26px; font-size: 16px; }
+.btn.line { box-shadow: inset 0 0 0 1px var(--hairline); }
+.btn.line:hover { background: var(--soft); }
+
+/* ---------- stage: arcs + phone + floating stat cards with cursor tags ---------- */
+.stage { position: relative; width: 100%; max-width: 1100px; height: 560px; margin-top: 64px; display: grid; place-items: end center; overflow: hidden; }
+.arcs { position: absolute; left: 50%; bottom: -380px; translate: -50% 0; width: 1100px; height: 1100px; pointer-events: none; }
+.arcs circle { fill: none; stroke: var(--hairline); }
+.phone { position: relative; z-index: 1; width: 280px; height: 520px; border-radius: 44px 44px 0 0; padding: 10px 10px 0; background: #16171a; }
+.screen { height: 100%; border-radius: 36px 36px 0 0; background: #fbfbfa; padding: 48px 18px 0; text-align: left; overflow: hidden; }
+.notch { position: absolute; top: 20px; left: 50%; translate: -50% 0; width: 88px; height: 24px; border-radius: 20px; background: #16171a; }
+.month { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--ink-3); }
+.month b { font: 500 22px/1 var(--font-display); color: var(--ink); letter-spacing: -0.01em; }
+.left { margin-top: 16px; font-size: 13px; color: var(--ink-3); }
+.left b { display: block; margin-top: 2px; font: 400 44px/1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); }
+.split { margin-top: 16px; display: flex; height: 8px; border-radius: 8px; overflow: hidden; gap: 4px; }
+.split i { display: block; height: 100%; border-radius: 8px; }
+.who { margin-top: 8px; display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); }
+.cats { margin-top: 18px; display: grid; gap: 8px; }
+.cat { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; padding: 12px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--hairline); font-size: 14px; }
+.cat span { font-weight: 500; }
+.cat em { font-style: normal; color: var(--ink-3); font-size: 13px; }
+.cat .bar { grid-column: 1 / -1; height: 4px; border-radius: 4px; background: #eeeeec; overflow: hidden; }
+.cat .bar i { display: block; height: 100%; background: var(--ink); }
+
+.stat { position: absolute; z-index: 2; width: 230px; padding: 16px; border-radius: 18px; background: #fff; text-align: left;
+  box-shadow: inset 0 0 0 1px var(--hairline), 0 24px 48px -24px rgb(22 23 26 / .25); }
+.stat small { font-size: 13px; color: var(--ink-3); }
+.stat b { display: block; margin-top: 4px; font: 400 34px/1 var(--font-display); letter-spacing: -0.02em; }
+.stat p { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+.stat p strong { color: var(--good); font-weight: 500; }
+.s1 { left: 40px; top: 96px; } .s2 { right: 40px; top: 208px; } .s3 { left: 120px; bottom: 40px; }
+/* signature: a cursor with a name tag, one per partner, on each card they touched */
+.cursor { position: absolute; display: flex; align-items: flex-start; gap: 2px; pointer-events: none; }
+.cursor svg { width: 18px; height: 18px; }
+.cursor span { margin-top: 14px; padding: 2px 8px; border-radius: 6px 999px 999px 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.cursor.you svg { color: var(--you); } .cursor.you span { background: var(--you); color: #fff; }
+.cursor.them svg { color: var(--them); } .cursor.them span { background: var(--them); color: var(--them-ink); }
+.s1 .cursor { right: -60px; bottom: -28px; } .s2 .cursor { left: -44px; top: -22px; } .s3 .cursor { right: -56px; top: -18px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 680ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > .stage { animation-delay: 300ms; animation-duration: 900ms; }
+.stat { animation: rise 700ms var(--ease) both; } .s1 { animation-delay: 650ms; } .s2 { animation-delay: 760ms; } .s3 { animation-delay: 870ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .btn.plain { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .hero { padding-top: 48px; }
+  .stage { height: 500px; margin-top: 48px; }
+  .phone { width: 240px; height: 460px; }
+  .stat { width: 172px; padding: 12px; }
+  .stat b { font-size: 26px; }
+  .stat p { display: none; }
+  .stage { height: 520px; }
+  .s1 { left: 0; top: 0; } .s2 { right: 0; top: 168px; width: 148px; } .s3 { display: none; }
+  .s1 .cursor { right: -20px; bottom: -32px; } .s2 .cursor { left: -12px; top: -26px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><i aria-hidden="true"></i>Margin</a>
+    <div class="links"><a href="#">How it works</a><a href="#">For couples</a><a href="#">Pricing</a></div>
+    <div class="nav-r"><a class="btn plain" href="#">Log in</a><a class="btn dark" href="#">Try it together</a></div>
+  </nav>
+
+  <section class="hero" aria-labelledby="h">
+    <p class="tag"><b>New</b>Shared goals with separate accounts</p>
+    <h1 id="h">One budget for two, <em>edited at the same time</em></h1>
+    <p class="lead">Margin is a live budget you and your partner change together. Every edit shows who made it, so nobody has to ask where the grocery money went.</p>
+    <div class="ctas"><a class="btn dark lg" href="#">Invite your partner</a><a class="btn line lg" href="#">See a sample budget</a></div>
+
+    <div class="stage">
+      <svg class="arcs" viewBox="0 0 1100 1100" aria-hidden="true"><circle cx="550" cy="550" r="250"/><circle cx="550" cy="550" r="370"/><circle cx="550" cy="550" r="490"/><circle cx="550" cy="550" r="545" stroke-dasharray="2 6"/></svg>
+      <div class="phone" aria-label="Margin app preview">
+        <span class="notch" aria-hidden="true"></span>
+        <div class="screen">
+          <div class="month"><b>November</b><span>Maya and Theo</span></div>
+          <p class="left">Left to spend<b class="num">$1,240</b></p>
+          <div class="split" aria-hidden="true"><i style="width:58%;background:var(--you)"></i><i style="width:42%;background:var(--them)"></i></div>
+          <div class="who"><span class="num">Maya $2,030</span><span class="num">Theo $1,470</span></div>
+          <div class="cats">
+            <div class="cat"><span>Groceries</span><em class="num">$412 of $600</em><div class="bar"><i style="width:69%"></i></div></div>
+            <div class="cat"><span>Eating out</span><em class="num">$188 of $250</em><div class="bar"><i style="width:75%"></i></div></div>
+            <div class="cat"><span>Lisbon trip</span><em class="num">$900 of $2,400</em><div class="bar"><i style="width:38%"></i></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat s1"><small>Left to spend</small><b class="num">$1,240</b><p><strong>$160 ahead</strong> of last November</p>
+        <span class="cursor you" aria-hidden="true"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M2 1.5 15 7l-5.6 1.6L7.5 14z"/></svg><span>Maya</span></span></div>
+      <div class="stat s2"><small>Groceries</small><b class="num">$412</b><p>Theo moved $40 here from Eating out</p>
+        <span class="cursor them" aria-hidden="true"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M2 1.5 15 7l-5.6 1.6L7.5 14z"/></svg><span>Theo</span></span></div>
+      <div class="stat s3"><small>Lisbon trip</small><b class="num">38%</b><p>On track for May at $300 a month</p>
+        <span class="cursor you" aria-hidden="true"><svg viewBox="0 0 18 18" fill="currentColor"><path d="M2 1.5 15 7l-5.6 1.6L7.5 14z"/></svg><span>Maya</span></span></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

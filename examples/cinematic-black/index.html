@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000">
+<title>Shelf — clipboard history for Mac</title>
+<style>
+/* slop-ok: overused-font, Newsreader chosen for this look; principles.md says what to use when the user has not decided */
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url(../fonts/newsreader-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --canvas: #000;
+  --ink: rgb(237 237 237);
+  --ink-2: rgb(163 163 163);
+  --ink-3: rgb(128 128 128);
+  --hairline: rgb(255 255 255 / .1);
+  --surface: #121214;
+  --surface-2: #1a1a1d;
+  --accent: #ffb547;
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / .08);
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); color-scheme: dark; }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.nav { max-width: 1200px; height: 72px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 40px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 600 17px/1 var(--font-ui); letter-spacing: -0.01em; }
+.app-icon { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(160deg, #ffcf7a, #f08a24); display: grid; place-items: center; box-shadow: var(--glass-edge); }
+.app-icon i { width: 12px; height: 9px; border: 2px solid #3b1d00; border-top: 0; border-radius: 0 0 3px 3px; }
+.links { display: flex; gap: 28px; font: 400 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.nav-right { margin-left: auto; }
+
+.pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding-inline: 18px; border-radius: 999px;
+  font: 500 15px/1 var(--font-ui); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.pill:active { transform: scale(.97); }
+.pill svg { width: 16px; height: 16px; }
+.pill-light { background: #fff; color: #0a0a0a; }
+.pill-light:hover { background: #e6e6e6; }
+.pill-dark { background: #1c1c1e; color: var(--ink); box-shadow: var(--glass-edge), 0 0 0 1px var(--hairline); }
+.pill-dark:hover { background: #262629; }
+.pill-lg { height: 48px; padding-inline: 24px; font-size: 16px; }
+
+.hero { max-width: 1024px; margin-inline: auto; padding: 112px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; z-index: 1; }
+.badge { display: inline-flex; align-items: center; gap: 10px; height: 32px; padding: 0 14px 0 4px; border-radius: 999px; font: 400 14px/1 var(--font-ui); color: var(--ink-2);
+  background: rgb(255 255 255 / .04); box-shadow: var(--glass-edge), 0 0 0 1px var(--hairline); }
+.badge b { height: 24px; padding-inline: 10px; border-radius: 999px; background: #fff; color: #0a0a0a; font: 600 12px/24px var(--font-ui); }
+.badge:hover { color: var(--ink); }
+h1 { margin-top: 28px; max-width: 18ch; font: 500 clamp(2.75rem, 6.4vw, 5rem)/1.02 var(--font-display); letter-spacing: -0.03em; }
+h1 .dim { display: block; color: rgb(140 140 140); }
+.lead { margin-top: 24px; max-width: 38rem; font-size: 19px; line-height: 1.55; color: var(--ink-2); }
+.actions { margin-top: 36px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.fine { margin-top: 20px; font-size: 14px; color: var(--ink-3); }
+.fine b { color: var(--ink); font-weight: 600; }
+kbd { font: 500 14px/1 var(--font-mono); padding: 4px 6px; border-radius: 6px; background: #1c1c1e; box-shadow: var(--glass-edge), 0 0 0 1px var(--hairline); color: var(--ink); }
+
+/* stage: a Mac desktop at dusk with Shelf open */
+.stage { position: relative; margin-top: 88px; padding: 0 var(--gutter) 120px; }
+.stage::before { content: ""; position: absolute; left: 50%; top: -120px; width: 1300px; height: 520px; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 60%, rgb(255 170 80 / .16), transparent 70%); }
+.desktop { position: relative; width: min(1160px, 100%); aspect-ratio: 16 / 9.4; margin-inline: auto; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline), 0 40px 120px -30px rgb(0 0 0 / .9);
+  background:
+    radial-gradient(60% 50% at 70% 78%, rgb(255 150 60 / .9), transparent 60%),
+    radial-gradient(80% 60% at 30% 90%, rgb(220 90 50 / .7), transparent 65%),
+    linear-gradient(180deg, #0b1a2e 0%, #23314d 34%, #7a4a52 64%, #e98a4a 86%, #f4b26a 100%); }
+.desktop::after { content: ""; position: absolute; inset: auto 0 0 0; height: 34%;
+  background: linear-gradient(180deg, transparent, rgb(10 14 24 / .9) 60%), radial-gradient(120% 60% at 50% 100%, #0b0f1a 50%, transparent 51%); }
+.menubar { position: absolute; inset: 0 0 auto 0; height: 30px; display: flex; align-items: center; gap: 18px; padding-inline: 16px; z-index: 2;
+  background: rgb(10 14 24 / .35); backdrop-filter: blur(20px) saturate(160%); font: 500 13px/1 var(--font-ui); color: rgb(255 255 255 / .9); }
+.menubar .r { margin-left: auto; display: flex; gap: 16px; align-items: center; font-weight: 400; }
+.menubar .shelf-icon { width: 16px; height: 12px; border: 2px solid #fff; border-top: 0; border-radius: 0 0 3px 3px; }
+
+.panel { position: absolute; left: 50%; top: 13%; translate: -50% 0; z-index: 3; width: min(720px, 86%); display: grid; grid-template-columns: 1fr 1.05fr;
+  border-radius: 16px; overflow: hidden; background: rgb(22 22 25 / .82); backdrop-filter: blur(30px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .12), 0 0 0 1px rgb(255 255 255 / .1), 0 30px 80px -20px rgb(0 0 0 / .7); }
+.search { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; height: 52px; padding-inline: 18px; border-bottom: 1px solid var(--hairline); font: 400 16px/1 var(--font-ui); color: var(--ink); }
+.search svg { width: 18px; height: 18px; stroke: var(--ink-3); }
+.search .q::after { content: ""; display: inline-block; width: 2px; height: 18px; margin-left: 1px; vertical-align: -3px; background: var(--accent); animation: caret 1s steps(1) infinite; } /* slop-ok: the typed caret is the signature; off under reduced motion */
+.search .count { margin-left: auto; font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+@keyframes caret { 50% { opacity: 0; } }
+.list { padding: 8px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--hairline); }
+.item { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; height: 44px; padding-inline: 10px; border-radius: 10px; font: 400 14px/1.2 var(--font-ui); color: var(--ink); }
+.item .t { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.item small { font: 400 12px/1 var(--font-ui); color: var(--ink-3); }
+.item .ic { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; background: rgb(255 255 255 / .06); }
+.item .ic svg { width: 16px; height: 16px; stroke: var(--ink-2); }
+.item.on { background: rgb(255 181 71 / .16); box-shadow: inset 0 0 0 1px rgb(255 181 71 / .28); }
+.item.on .ic { background: var(--accent); }
+.item.on .ic svg { stroke: #2a1700; }
+.preview { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.preview .meta { display: flex; justify-content: space-between; font: 400 12px/1 var(--font-ui); color: var(--ink-3); }
+.code { flex: 1; margin: 0; padding: 14px; border-radius: 10px; background: rgb(0 0 0 / .35); box-shadow: inset 0 0 0 1px var(--hairline);
+  font: 400 12.5px/1.7 var(--font-mono); color: #d4d4d4; white-space: pre; overflow: hidden; }
+.code .k { color: #ffb547; } .code .s { color: #9fd38a; } .code .c { color: #6b6b6b; }
+.hint { display: flex; gap: 14px; font: 400 12px/1 var(--font-ui); color: var(--ink-3); }
+.hint span { display: inline-flex; align-items: center; gap: 6px; }
+.hint kbd { font-size: 12px; padding: 2px 6px; }
+
+.dock { position: absolute; left: 50%; bottom: 3.5%; translate: -50% 0; z-index: 3; display: flex; gap: 10px; padding: 8px; border-radius: 20px;
+  background: rgb(255 255 255 / .12); backdrop-filter: blur(20px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .2), 0 0 0 1px rgb(255 255 255 / .12); }
+.dock i { width: 44px; height: 44px; border-radius: 11px; display: block; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+.hero > * { animation: rise 700ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 80ms; } .hero > :nth-child(3) { animation-delay: 160ms; }
+.hero > :nth-child(4) { animation-delay: 240ms; } .hero > :nth-child(5) { animation-delay: 300ms; }
+.stage { animation: rise 900ms 380ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 809px) {
+  .links, .nav-right .pill-dark { display: none; }
+  .hero { padding-top: 64px; }
+  .lead { font-size: 17px; }
+  .actions { width: 100%; flex-direction: column; } .actions .pill { width: 100%; }
+  .stage { margin-top: 56px; padding-bottom: 64px; }
+  .desktop { aspect-ratio: 3 / 4; }
+  .panel { grid-template-columns: 1fr; top: 10%; width: 92%; }
+  .preview, .menubar .r span:not(:last-child) { display: none; }
+  .list { border-right: 0; }
+  .dock i:nth-child(n+5) { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <header>
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="#"><span class="app-icon"><i></i></span>Shelf</a>
+      <div class="links"><a href="#">Features</a><a href="#">Pricing</a><a href="#">Changelog</a><a href="#">Help</a></div>
+      <div class="nav-right"><a class="pill pill-light" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download</a></div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <a class="badge" href="#"><b>New</b>Pinboards for the snippets you reuse daily</a>
+    <h1>Everything you copied, <span class="dim">one keystroke away.</span></h1>
+    <p class="lead">Shelf keeps the last 5,000 things you copied, from text and links to images and code, searchable with <kbd>⌘⇧V</kbd>. Native, 4&nbsp;MB, and nothing leaves your Mac.</p>
+    <div class="actions">
+      <a class="pill pill-light pill-lg" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download for Mac</a>
+      <a class="pill pill-dark pill-lg" href="#">Buy a license</a>
+    </div>
+    <p class="fine">Free for 14 days, then <b>$14</b> once. macOS 13 or later.</p>
+  </section>
+
+  <section class="stage" aria-label="Shelf open on a Mac desktop">
+    <div class="desktop">
+      <div class="menubar"><span>Finder</span><span style="font-weight:400;opacity:.8">File</span><span style="font-weight:400;opacity:.8">Edit</span><span style="font-weight:400;opacity:.8">View</span>
+        <div class="r"><span class="shelf-icon" aria-hidden="true"></span><span>Fri 31 Oct</span><span>20:34</span></div></div>
+      <div class="panel">
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="q">paylane</span><span class="count">6 of 4,812 clips</span></div>
+        <div class="list">
+          <div class="item on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></span><span class="t">const paylane = new Paylane(…</span><small>2m</small></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></span><span class="t">dashboard.paylane.dev/test/payments</span><small>14m</small></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span class="t">Paylane payout lands every Tuesday</span><small>1h</small></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg></span><span class="t">paylane-checkout-mobile.png</span><small>Yesterday</small></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span class="t">sk_test_••••••••••••4Qz</span><small>Mon</small></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></span><span class="t">docs.paylane.dev/webhooks</span><small>Mon</small></div>
+        </div>
+        <div class="preview">
+          <div class="meta"><span>Code · from Cursor</span><span>182 characters</span></div>
+<pre class="code"><span class="k">const</span> paylane = <span class="k">new</span> Paylane(
+  process.env.PAYLANE_KEY,
+  { apiVersion: <span class="s">"2026-09-30"</span> }
+);
+
+<span class="c">// one-time license, no subscription</span>
+<span class="k">await</span> paylane.checkout.sessions
+  .create({ mode: <span class="s">"payment"</span> });</pre>
+          <div class="hint"><span><kbd>↵</kbd>Paste</span><span><kbd>⌘P</kbd>Pin</span><span><kbd>⌘⌫</kbd>Delete</span></div>
+        </div>
+      </div>
+      <div class="dock" aria-hidden="true">
+        <i style="background:linear-gradient(160deg,#5ac8fa,#007aff)"></i><i style="background:linear-gradient(160deg,#fff,#d8d8d8)"></i><i style="background:linear-gradient(160deg,#3a3a3c,#111)"></i>
+        <i style="background:linear-gradient(160deg,#ffcf7a,#f08a24)"></i><i style="background:linear-gradient(160deg,#34c759,#1e8e3e)"></i><i style="background:linear-gradient(160deg,#ff6b6b,#d63031)"></i><i style="background:linear-gradient(160deg,#5eead4,#0f766e)"></i>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

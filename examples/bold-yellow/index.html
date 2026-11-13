@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Pilotcrew — real testers for Play Store closed testing</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --canvas: #ffffff;
+  --surface: #f6f6f7;
+  --ink: #1a1a1a;
+  --ink-2: color-mix(in oklab, var(--ink) 62%, #fff);
+  --ink-3: color-mix(in oklab, var(--ink) 50%, #fff);
+  --hairline: color-mix(in oklab, var(--ink) 10%, transparent);
+  --accent: #ffe500;
+  --accent-deep: #e6c200;
+  --link: #0a66d8;
+  --good: #16a34a;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+
+.promo { height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--surface); font: 500 14px/1 var(--font-ui); color: var(--ink-2); }
+.promo a { color: var(--link); }
+.site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--hairline); background: color-mix(in oklab, var(--canvas) 80%, transparent); backdrop-filter: saturate(150%) blur(8px); }
+.nav { max-width: 1120px; height: 64px; margin-inline: auto; padding-inline: var(--gutter); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 700 18px/1 var(--font-ui); letter-spacing: -0.02em; }
+.logo svg { width: 24px; height: 24px; }
+.links { display: flex; gap: 36px; font: 400 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav-right { justify-self: end; display: flex; align-items: center; gap: 20px; font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+.yellow { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding-inline: 18px; border-radius: 999px; background: var(--accent); color: #111; font: 600 15px/1 var(--font-ui);
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.yellow:hover { background: #ffdc00; }
+.yellow:active { transform: scale(.97); }
+.yellow-lg { height: 56px; padding-inline: 28px; font-size: 19px; }
+
+.hero { max-width: 1120px; margin-inline: auto; padding: 72px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.kicker { font: 600 clamp(1.25rem, 2vw, 1.5rem)/1.2 var(--font-ui); letter-spacing: -0.01em; color: var(--ink-2); }
+h1 { margin-top: 16px; font: 700 clamp(2.75rem, 6.4vw, 5rem)/1.04 var(--font-ui); letter-spacing: -0.04em; max-width: 18ch; }
+.sub { margin-top: 28px; font: 500 clamp(1.5rem, 2.6vw, 2rem)/1.2 var(--font-ui); letter-spacing: -0.02em; color: var(--ink-2); }
+.sub b { color: var(--ink); font-weight: 700; }
+.actions { margin-top: 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 32px; }
+.price { font: 500 19px/1 var(--font-ui); color: var(--link); }
+.price:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fine { margin-top: 24px; font-size: 14px; color: var(--ink-2); }
+.proof { margin-top: 40px; display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--ink-2); }
+.faces { display: flex; }
+.faces span { width: 32px; height: 32px; border-radius: 50%; margin-left: -8px; border: 2px solid #fff; }
+.faces span:first-child { margin-left: 0; }
+.proof b { color: var(--ink); }
+
+/* progress card: proves "12+ testers, approved faster" */
+.stage { max-width: 1120px; margin: 72px auto 0; padding: 0 var(--gutter) 120px; }
+.card { width: min(880px, 100%); margin-inline: auto; border-radius: 24px; background: #fff; padding: 32px;
+  box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -32px rgb(30 30 0 / .25); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.app { display: flex; align-items: center; gap: 16px; }
+.app i { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(150deg, #38bdf8, #2563eb); display: grid; place-items: center; }
+.app i svg { width: 28px; height: 28px; }
+.app b { display: block; font: 600 20px/1.2 var(--font-ui); letter-spacing: -0.01em; }
+.app small { font: 400 14px/1.4 var(--font-ui); color: var(--ink-3); }
+.status { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding-inline: 12px; border-radius: 999px; background: #ecfdf3; color: var(--good); font: 600 14px/1 var(--font-ui); }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.prog { margin-top: 32px; }
+.prog-head { display: flex; justify-content: space-between; font: 500 15px/1 var(--font-ui); }
+.prog-head span { color: var(--ink-3); }
+.bar { margin-top: 12px; height: 12px; border-radius: 999px; background: var(--surface); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 64%; border-radius: 999px; background: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-deep); }
+.days { margin-top: 8px; display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; }
+.days i { height: 6px; border-radius: 3px; background: var(--surface); }
+.days i.done { background: var(--ink); }
+.testers { margin-top: 32px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 32px; }
+.t { display: flex; align-items: center; gap: 12px; height: 48px; border-bottom: 1px solid var(--hairline); font: 500 15px/1 var(--font-ui); }
+.t .av { width: 32px; height: 32px; border-radius: 50%; flex: none; }
+.t small { display: block; margin-top: 4px; font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+.t .ok { margin-left: auto; font: 500 13px/1 var(--font-ui); color: var(--good); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 280ms; } .hero > :nth-child(6) { animation-delay: 350ms; }
+.stage { animation: rise 800ms 420ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 809px) {
+  .links, .nav-right .from { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .promo { font-size: 12px; }
+  .hero { padding-top: 48px; }
+  .actions { flex-direction: column; gap: 20px; width: 100%; } .yellow-lg { width: 100%; }
+  .proof { flex-direction: column; gap: 8px; }
+  .card { padding: 20px; }
+  .card-top { flex-direction: column; gap: 16px; }
+  .testers { grid-template-columns: 1fr; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<p class="promo">Launch week: 20% off every plan. <a href="#">See plans ›</a></p>
+<header class="site-header">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c3-1 6-4 8-9 1 5 4 9 10 9-3 4-8 6-12 5s-6-3-6-5z" fill="#ffd400"/><path d="M11 6c1 5 4 9 10 9" fill="none" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round"/></svg>Pilotcrew</a>
+    <div class="links"><a href="#">How it works</a><a href="#">Testimonials</a><a href="#">Pricing</a><a href="#">FAQ</a></div>
+    <div class="nav-right"><span class="from">From $9</span><a class="yellow" href="#">Get my testers</a></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <p class="kicker">Play Store closed testing</p>
+    <h1>Get 12+ real testers. Reach production faster.</h1>
+    <p class="sub">No fake installs. No <b>rejections</b>.</p>
+    <div class="actions"><a class="yellow yellow-lg" href="#">Start my test</a><a class="price" href="#">From just $9 ›</a></div>
+    <p class="fine">Production access guaranteed, or your money back.</p>
+    <div class="proof">
+      <div class="faces"><span style="background:linear-gradient(135deg,#a3765a,#5c3b28)"></span><span style="background:linear-gradient(135deg,#e7c3a1,#b07a52)"></span><span style="background:linear-gradient(135deg,#6b7280,#374151)"></span><span style="background:linear-gradient(135deg,#d8a48f,#8a4f3a)"></span><span style="background:linear-gradient(135deg,#9aa5b1,#4b5563)"></span></div>
+      <span><b>4.9</b> out of 5 from 10,000+ approved apps</span>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Test progress preview">
+    <div class="card">
+      <div class="card-top">
+        <div class="app"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2-6 4 12 2-6h4"/></svg></i><div><b>Pulse Habit Tracker</b><small>com.pulse.habits · closed testing</small></div></div>
+        <span class="status"><i></i>On track for approval</span>
+      </div>
+      <div class="prog">
+        <div class="prog-head">Day 9 of 14<span class="num">14 of 14 testers active</span></div>
+        <div class="bar"><i></i></div>
+        <div class="days" aria-hidden="true"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="testers">
+        <div class="t"><span class="av" style="background:linear-gradient(135deg,#a3765a,#5c3b28)"></span><span>Aarav M.<small>Pixel 8 · opened today</small></span><span class="ok">Active</span></div>
+        <div class="t"><span class="av" style="background:linear-gradient(135deg,#e7c3a1,#b07a52)"></span><span>Lucía R.<small>Galaxy S23 · opened today</small></span><span class="ok">Active</span></div>
+        <div class="t"><span class="av" style="background:linear-gradient(135deg,#6b7280,#374151)"></span><span>Tomás K.<small>OnePlus 12 · opened today</small></span><span class="ok">Active</span></div>
+        <div class="t"><span class="av" style="background:linear-gradient(135deg,#d8a48f,#8a4f3a)"></span><span>Mei L.<small>Pixel 7a · opened yesterday</small></span><span class="ok">Active</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

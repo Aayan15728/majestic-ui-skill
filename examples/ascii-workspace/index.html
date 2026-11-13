@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<title>Tandem — every coding agent, one local workspace</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #f6f5f1;
+  --surface: #ffffff;
+  --ink: #111111;
+  --ink-2: color-mix(in oklab, var(--ink) 66%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 48%, var(--canvas));
+  --hairline: color-mix(in oklab, var(--ink) 10%, transparent);
+  --accent: #2f6feb;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; position: relative; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ASCII art made from glyphs (signature), drawn once on load */
+.ascii { position: absolute; z-index: 0; right: -40px; top: 40px; width: 900px; height: 600px; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 34%), linear-gradient(to bottom, #000 70%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0%, #000 34%); }
+
+.nav { position: relative; z-index: 2; max-width: 1240px; height: 64px; margin-inline: auto; padding-inline: var(--gutter); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 500 17px/1 var(--font-ui); letter-spacing: -0.01em; }
+.logo svg { width: 20px; height: 20px; }
+.links { display: flex; gap: 28px; font: 400 14px/1 var(--font-ui); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav-right { justify-self: end; display: flex; align-items: center; gap: 20px; font: 500 14px/1 var(--font-ui); }
+.nav-right svg { width: 18px; height: 18px; }
+.stars { display: inline-flex; align-items: center; gap: 6px; }
+.pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding-inline: 16px; border-radius: 999px; font: 500 14px/1 var(--font-ui); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.pill:active { transform: scale(.97); }
+.pill-line { background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); }
+.pill-line:hover { background: #fafaf8; }
+.pill-ink { background: var(--ink); color: #fff; }
+.pill-ink:hover { background: #2a2a2a; }
+.pill-lg { height: 48px; padding-inline: 20px; font-size: 15px; }
+.pill svg { width: 18px; height: 18px; }
+
+.hero { position: relative; z-index: 1; max-width: 1240px; margin-inline: auto; padding: 72px var(--gutter) 0; display: flex; flex-direction: column; align-items: flex-start; }
+.sponsor { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding-inline: 12px; border-radius: 999px; background: rgb(255 255 255 / .7); box-shadow: inset 0 0 0 1px var(--hairline); font: 500 14px/1 var(--font-ui); }
+.sponsor svg { width: 16px; height: 16px; }
+.agents { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; }
+.agents span { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); }
+.agents svg { width: 22px; height: 22px; }
+h1 { margin-top: 32px; max-width: 14ch; font: 500 clamp(2.6rem, 5vw, 4rem)/1.04 var(--font-ui); letter-spacing: -0.045em; }
+.lead { margin-top: 20px; max-width: 42rem; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+.actions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+.fine { margin-top: 16px; font-size: 14px; color: var(--ink-2); }
+.fine b { color: var(--ink); font-weight: 600; }
+
+/* app window */
+.stage { position: relative; z-index: 1; max-width: 1240px; margin: 56px auto 0; padding: 0 var(--gutter) 120px; }
+.win { border-radius: 16px; background: var(--surface); overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -30px rgb(40 30 10 / .25); }
+.bar { height: 44px; display: flex; align-items: center; gap: 16px; padding-inline: 16px; border-bottom: 1px solid var(--hairline); background: #fbfaf8; }
+.lights { display: flex; gap: 8px; } .lights i { width: 12px; height: 12px; border-radius: 50%; }
+.tabs { display: flex; gap: 4px; margin-left: 24px; }
+.tab { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding-inline: 12px; border-radius: 8px; font: 400 13px/1 var(--font-ui); color: var(--ink-2); }
+.tab.on { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline); }
+.tab i { width: 6px; height: 6px; border-radius: 50%; }
+.body { display: grid; grid-template-columns: 240px 1fr 380px; min-height: 420px; }
+.side { border-right: 1px solid var(--hairline); padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+.side h6 { margin: 8px 8px 8px; font: 500 12px/1 var(--font-ui); color: var(--ink-3); }
+.run { display: flex; align-items: center; gap: 10px; height: 36px; padding-inline: 8px; border-radius: 8px; font: 400 14px/1 var(--font-ui); }
+.run.on { background: #f3f2ee; }
+.run .st { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--ink-3); }
+.run i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.chat { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.meta { font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+.msg { max-width: 34rem; font-size: 15px; line-height: 1.6; }
+.msg.me { align-self: flex-end; background: #f3f2ee; padding: 12px 16px; border-radius: 14px 14px 4px 14px; }
+.diff { border-radius: 12px; box-shadow: inset 0 0 0 1px var(--hairline); overflow: hidden; font: 400 13px/1.7 var(--font-mono); }
+.diff .f { padding: 8px 12px; background: #fbfaf8; border-bottom: 1px solid var(--hairline); color: var(--ink-2); display: flex; justify-content: space-between; }
+.diff .f b { font-weight: 500; color: #15803d; }
+.diff div.l { padding: 0 12px; white-space: pre; }
+.diff .add { background: #eefbf1; color: #166534; } .diff .del { background: #fdf0f0; color: #991b1b; }
+.term { background: #111; color: #d6d6d6; padding: 16px; font: 400 13px/1.7 var(--font-mono); }
+.term .p { color: #7dd3fc; } .term .ok { color: #86efac; } .term .dim { color: #8a8a8a; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 280ms; }
+.stage { animation: rise 800ms 380ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .stars, .nav-right .moon { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .ascii { opacity: .45; right: -420px; top: 120px; }
+  .hero { padding-top: 40px; }
+  .actions { width: 100%; flex-direction: column; } .actions .pill { width: 100%; }
+  .body { grid-template-columns: 1fr; }
+  .side, .term, .tabs .tab:not(.on) { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <canvas class="ascii" id="ascii" width="900" height="600" aria-hidden="true"></canvas>
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"><path d="M5 4l7 8 7-8M12 12v8"/></svg>Tandem</a>
+    <div class="links"><a href="#">Install</a><a href="#">Docs</a><a href="#">Changelog</a><a href="#">Sponsor</a></div>
+    <div class="nav-right">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Dark mode"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+      <span class="stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>2.2k</span>
+      <a class="pill pill-line" href="#">Download</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <a class="sponsor" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"><path d="M5 4l7 8 7-8M12 12v8"/></svg>Sponsor Tandem<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <div class="agents" aria-label="Works with nine coding agents">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#e07a5f" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M12 12 20 7.5M12 12v9M12 12 4 7.5"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="#111"><rect x="7" y="4" width="10" height="16" rx="2"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M12 3 21 8v8l-9 5-9-5V8z"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 12 4l8 16"/><path d="M8 13h8"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M5 19 19 5"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="#111"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><circle cx="8" cy="16" r="3"/><circle cx="16" cy="16" r="3"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"><path d="M6 5v14M6 5h6a4 4 0 0 1 0 8H6M13 13l5 6"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.4" stroke-linecap="round"><path d="M5 6h14M9 6v12M15 6v8"/></svg></span>
+    </div>
+    <h1>Every coding agent, one local workspace</h1>
+    <p class="lead">Tandem is a local-first command center for agentic work. Run agents in parallel, review every diff in one place, and ship without losing context.</p>
+    <div class="actions">
+      <a class="pill pill-ink pill-lg" href="#">Download for macOS<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg></a>
+      <a class="pill pill-line pill-lg" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Star the repo</a>
+    </div>
+    <p class="fine">Already downloaded by <b>22,741</b> developers</p>
+  </section>
+
+  <section class="stage" aria-label="Tandem workspace preview">
+    <div class="win">
+      <div class="bar">
+        <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+        <div class="tabs"><span class="tab"><i style="background:#16a34a"></i>Hide empty states</span><span class="tab"><i style="background:#16a34a"></i>Redesign settings</span><span class="tab on"><i style="background:#f59e0b"></i>Fix broken redirect</span></div>
+      </div>
+      <div class="body">
+        <div class="side">
+          <h6>Running · 3 agents</h6>
+          <div class="run on"><i style="background:#f59e0b"></i>Fix broken redirect<span class="st">25s</span></div>
+          <div class="run"><i style="background:#16a34a"></i>Redesign settings<span class="st">done</span></div>
+          <div class="run"><i style="background:#16a34a"></i>Hide empty states<span class="st">done</span></div>
+          <h6>Queued</h6>
+          <div class="run"><i style="background:#d4d4d4"></i>Add rate limit to API</div>
+          <div class="run"><i style="background:#d4d4d4"></i>Write migration tests</div>
+        </div>
+        <div class="chat">
+          <span class="meta">Worked for 25s · 2 files changed</span>
+          <p class="msg me">After login, users land on /undefined. Fix the redirect and keep the return URL.</p>
+          <p class="msg">The callback read <code>next</code> before the session existed. I now read it from the signed state param and fall back to the dashboard.</p>
+          <div class="diff">
+            <div class="f">src/auth/callback.ts<b>+3 −1</b></div>
+            <div class="l del">-  const next = req.query.next</div>
+            <div class="l add">+  const state = verifyState(req.query.state)</div>
+            <div class="l add">+  const next = state?.returnTo ?? "/dashboard"</div>
+            <div class="l">   return redirect(next)</div>
+          </div>
+        </div>
+        <div class="term">
+          <div><span class="p">~/acme</span> pnpm test auth</div>
+          <div class="dim">running 14 tests…</div>
+          <div class="ok">✓ callback keeps return URL</div>
+          <div class="ok">✓ falls back to /dashboard</div>
+          <div class="ok">✓ rejects tampered state</div>
+          <div class="dim">14 passed · 1.8s</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+(() => {
+  // Paint a small scene (sky, a temple on a hill, the sea), then redraw it as glyphs.
+  const W = 900, H = 600, cell = 10;
+  const src = document.createElement("canvas"); src.width = W; src.height = H;
+  const s = src.getContext("2d");
+  const sky = s.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#f6f5f1"); sky.addColorStop(1, "#efe6d2"); s.fillStyle = sky; s.fillRect(0, 0, W, H);
+  s.fillStyle = "#cdb98f"; s.beginPath(); s.moveTo(0, 470); s.quadraticCurveTo(450, 330, 900, 420); s.lineTo(900, 600); s.lineTo(0, 600); s.fill();
+  const sea = s.createLinearGradient(0, 490, 0, 600); sea.addColorStop(0, "#a9c6e6"); sea.addColorStop(1, "#6f9bd0"); s.fillStyle = sea; s.beginPath(); s.moveTo(0, 492); s.bezierCurveTo(160, 480, 320, 500, 560, 520); s.lineTo(560, 600); s.lineTo(0, 600); s.fill();
+  const tx = 330, ty = 180;
+  s.fillStyle = "#b99b62"; s.beginPath(); s.moveTo(tx - 20, ty + 60); s.lineTo(tx + 230, ty - 10); s.lineTo(tx + 480, ty + 60); s.fill();
+  s.fillStyle = "#a88a55"; s.fillRect(tx, ty + 60, 460, 26);
+  for (let i = 0; i < 9; i++) { s.fillStyle = i % 2 ? "#c9ad78" : "#bfa16b"; s.fillRect(tx + 14 + i * 50, ty + 86, 24, 160); }
+  s.fillStyle = "#9c7f4c"; s.fillRect(tx - 20, ty + 246, 500, 18); s.fillRect(tx - 40, ty + 264, 540, 18);
+  const px = s.getImageData(0, 0, W, H).data;
+  const out = document.getElementById("ascii").getContext("2d");
+  const chars = " .:-=+*%#@";
+  out.font = "500 10px 'Geist Mono', monospace"; out.textBaseline = "top";
+  for (let y = 0; y < H; y += cell) for (let x = 0; x < W; x += cell * .62) {
+    const i = ((y + 5) * W + Math.floor(x + 3)) * 4, r = px[i], g = px[i + 1], b = px[i + 2];
+    const dark = 1 - (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    const c = chars[Math.min(chars.length - 1, Math.floor(Math.pow(dark, .8) * 1.9 * chars.length))];
+    if (c === " ") continue;
+    out.fillStyle = `rgb(${r * .78 + 40},${g * .78 + 38},${b * .78 + 34})`;
+    out.fillText(c, x, y);
+  }
+})();
+</script>
+</body>
+</html>

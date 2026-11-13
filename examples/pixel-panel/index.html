@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f3f1">
+<title>Burrow — your agents, where your files live</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+:root {
+  --canvas: #f4f3f1;
+  --panel: #f3b47a;
+  --ink: #1f2328;
+  --ink-2: color-mix(in oklab, var(--ink) 70%, #fff);
+  --ink-3: color-mix(in oklab, var(--ink) 52%, #fff);
+  --hairline: color-mix(in oklab, var(--ink) 10%, transparent);
+  --brand: #f08a24;
+  --select: #0a7aff;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 24px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.nav { max-width: 1320px; height: 88px; margin-inline: auto; padding-inline: 32px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 600 22px/1 var(--font-ui); letter-spacing: -0.03em; color: color-mix(in oklab, var(--brand) 62%, #2a1400); }
+.logo i { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(160deg, #ffb35c, #f08a24); display: grid; place-items: center; }
+.logo svg { width: 16px; height: 16px; }
+.links { display: flex; gap: 40px; font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav-right { justify-self: end; display: flex; align-items: center; gap: 28px; font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding-inline: 16px; border-radius: 8px; background: var(--ink); color: #fff; font: 600 15px/1 var(--font-ui);
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:hover { background: #33383f; }
+.btn:active { transform: scale(.97); }
+.btn svg { width: 16px; height: 16px; }
+.btn-lg { height: 48px; padding-inline: 24px; font-size: 16px; border-radius: 10px; }
+
+/* the pixel-blind panel (signature) */
+.panel { position: relative; max-width: 1320px; margin: 0 auto; border-radius: 24px; background: var(--panel); box-shadow: inset 0 0 0 1px rgb(120 60 0 / .12); }
+.pixels { position: absolute; inset: 0; border-radius: 24px; overflow: hidden; pointer-events: none; display: grid; grid-template-columns: repeat(22, 1fr); grid-auto-rows: 64px; }
+.pixels i { display: block; }
+.panel::after { content: ""; position: absolute; inset: 0; border-radius: 24px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgb(255 255 255 / .16) 0 1px, transparent 1px 8px); }
+.panel-wrap { padding-inline: var(--gutter); }
+.hero { position: relative; z-index: 1; padding: 104px 24px 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+h1 { font: 500 clamp(2.75rem, 6vw, 4.75rem)/1.02 var(--font-ui); letter-spacing: -0.045em; max-width: 14ch; }
+.lead { margin-top: 24px; max-width: 36rem; font-size: 19px; line-height: 1.6; color: var(--ink-2); }
+.hero .btn { margin-top: 32px; }
+
+.win { position: relative; z-index: 1; width: min(1150px, calc(100% - 48px)); margin: 72px auto -160px; border-radius: 16px; overflow: hidden; background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 40px 90px -30px rgb(90 40 0 / .4); display: grid; grid-template-columns: 240px 1fr 340px; min-height: 440px; }
+.side { background: #faf0e6; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+.lights { display: flex; gap: 8px; } .lights i { width: 12px; height: 12px; border-radius: 50%; }
+.locs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.locs span { aspect-ratio: 1; border-radius: 12px; background: #f0e1d1; display: grid; place-items: center; }
+.locs svg { width: 22px; height: 22px; }
+.side h6 { margin: 8px 0 0; font: 600 12px/1 var(--font-ui); color: var(--ink-3); }
+.side .fav { display: flex; align-items: center; gap: 8px; font: 500 14px/1 var(--font-ui); height: 28px; }
+.side .fav svg { width: 16px; height: 16px; }
+.files { border-left: 1px solid var(--hairline); border-right: 1px solid var(--hairline); }
+.files .path { height: 56px; display: flex; align-items: center; gap: 16px; padding-inline: 20px; font: 600 18px/1 var(--font-ui); border-bottom: 1px solid var(--hairline); }
+.files .path svg { width: 18px; height: 18px; color: var(--ink-3); }
+.row { display: grid; grid-template-columns: 1fr 140px; align-items: center; height: 40px; padding-inline: 20px; font: 400 15px/1 var(--font-ui); }
+.row.head { height: 36px; font: 500 13px/1 var(--font-ui); color: var(--ink-3); border-bottom: 1px solid var(--hairline); }
+.row span:first-child { display: flex; align-items: center; gap: 10px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row svg { flex: none; }
+.row svg { width: 18px; height: 18px; }
+.row small { font: 400 14px/1 var(--font-ui); color: var(--ink-3); }
+.row.sel { background: var(--select); color: #fff; } .row.sel small { color: rgb(255 255 255 / .8); }
+.agent { display: flex; flex-direction: column; }
+.agent .head { height: 56px; display: flex; align-items: center; gap: 10px; padding-inline: 16px; font: 600 16px/1 var(--font-ui); border-bottom: 1px solid var(--hairline); }
+.agent .head svg { width: 18px; height: 18px; }
+.agent .msgs { padding: 16px; display: flex; flex-direction: column; gap: 12px; font: 400 14px/1.5 var(--font-ui); }
+.q { align-self: flex-end; max-width: 90%; background: #f2f2f0; padding: 10px 14px; border-radius: 14px; }
+.a { color: var(--ink-2); }
+.a b { color: var(--ink); font-weight: 600; }
+.chipfile { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding-inline: 8px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--hairline); font: 500 12px/1 var(--font-ui); color: var(--ink); }
+.after { height: 220px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.win { animation: rise 800ms 320ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .nav-right .signin { display: none; }
+  .nav { grid-template-columns: 1fr auto; padding-inline: 20px; height: 72px; }
+  .hero { padding-top: 64px; }
+  .lead { font-size: 17px; }
+  .win { grid-template-columns: 1fr; width: calc(100% - 24px); margin-bottom: -120px; }
+  .side, .agent { display: none; }
+  .row { grid-template-columns: 1fr 96px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><i><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></i>Burrow</a>
+    <div class="links"><a href="#">Pricing</a><a href="#">Blog</a><a href="#">Changelog</a></div>
+    <div class="nav-right"><a class="signin" href="#">Sign in</a><a class="btn" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download</a></div>
+  </nav>
+
+  <div class="panel-wrap">
+    <section class="panel">
+      <div class="pixels" id="pixels" aria-hidden="true"></div>
+      <div class="hero">
+        <h1>Your agents, right where your files live.</h1>
+        <p class="lead">Your file browser is where the work already happens. Burrow puts an agent beside every folder, with the files for each task already in view.</p>
+        <a class="btn btn-lg" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download for macOS</a>
+      </div>
+      <div class="win" aria-label="Burrow window preview">
+        <div class="side">
+          <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+          <div class="locs">
+            <span><svg viewBox="0 0 24 24" fill="#5aa9f2"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="#7cc4ff"><path d="M7 18a5 5 0 1 1 1.2-9.9A6 6 0 0 1 19.6 10 4 4 0 0 1 18 18z"/></svg></span>
+            <span><svg viewBox="0 0 24 24"><path d="m8 4 8 0 6 10-4 6H6l-4-6z" fill="#34a853"/><path d="M8 4 2 14l4 6 6-10z" fill="#fbbc04"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="#9aa0a6"><rect x="3" y="5" width="18" height="14" rx="2"/></svg></span>
+          </div>
+          <h6>Favorites</h6>
+          <span class="fav"><svg viewBox="0 0 24 24" fill="none" stroke="#5aa9f2" stroke-width="2"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Customer feedback</span>
+          <span class="fav"><svg viewBox="0 0 24 24" fill="none" stroke="#5aa9f2" stroke-width="2"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Launch plan</span>
+          <span class="fav"><svg viewBox="0 0 24 24" fill="none" stroke="#5aa9f2" stroke-width="2"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Invoices 2026</span>
+        </div>
+        <div class="files">
+          <div class="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>Customer feedback</div>
+          <div class="row head"><span>Name</span><span>Date modified</span></div>
+          <div class="row"><span><svg viewBox="0 0 24 24" fill="#5aa9f2"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>from Downloads</span><small>Today, 11:18</small></div>
+          <div class="row sel"><span><svg viewBox="0 0 24 24" fill="#fff"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>onboarding-copy-v3.md</span><small>Today, 10:02</small></div>
+          <div class="row"><span><svg viewBox="0 0 24 24" fill="#c1c7d0"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>onboarding-copy-v2.md</span><small>Yesterday</small></div>
+          <div class="row"><span><svg viewBox="0 0 24 24" fill="#e5484d"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>call-notes-oct-28.pdf</span><small>Tue</small></div>
+          <div class="row"><span><svg viewBox="0 0 24 24" fill="#9b59f0"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>screen-recording-signup.mov</span><small>Mon</small></div>
+          <div class="row"><span><svg viewBox="0 0 24 24" fill="#16a34a"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>survey-responses.csv</span><small>Oct 24</small></div>
+        </div>
+        <div class="agent">
+          <div class="head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Which copy is current?</div>
+          <div class="msgs">
+            <p class="q">Which onboarding copy is current? Check it against the call notes and the screen recording.</p>
+            <p class="a"><b>v3 is current.</b> It matches the pricing promised on the Oct 28 call. The recording shows users stalling on step 2, which v3 already rewrites.</p>
+            <span><span class="chipfile">onboarding-copy-v3.md</span> <span class="chipfile">call-notes-oct-28.pdf</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="after"></div>
+</main>
+<script>
+(() => {
+  // Soft pixel blocks: lighter near the top-left, fading into the orange panel.
+  const el = document.getElementById("pixels"), cols = 22, rows = 14;
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const d = Math.hypot((x - 7) / cols, (y - 3) / rows * 1.4);
+    const a = Math.max(0, .85 - d * 1.7) * (.55 + rnd() * .45);
+    const i = document.createElement("i");
+    i.style.background = `rgb(255 250 244 / ${a.toFixed(2)})`;
+    el.appendChild(i);
+  }
+})();
+</script>
+</body>
+</html>

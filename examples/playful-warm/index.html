@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fbf6ea">
+<title>Bragcard — your numbers, made worth sharing</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #fbf6ea;
+  --ink: #17140f;
+  --ink-2: color-mix(in oklab, var(--ink) 64%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 48%, var(--canvas));
+  --hairline: color-mix(in oklab, var(--ink) 10%, transparent);
+  --accent: #f26a12;
+  --accent-light: #ff9d48;
+  --accent-ring: #f5b56f;
+  --dune: #f6c493;
+  --font-display: "Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; position: relative; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* atmosphere: a soft sand dune rising behind the preview + one doodle */
+.dune { position: absolute; z-index: 0; left: -12vw; top: 540px; width: 92vw; height: 760px; pointer-events: none;
+  background: radial-gradient(60% 55% at 40% 60%, var(--dune), color-mix(in oklab, var(--dune) 0%, transparent) 70%); filter: blur(12px); }
+.doodle { position: absolute; z-index: 0; right: max(24px, calc(50% - 640px)); top: 472px; width: 190px; pointer-events: none; }
+
+.nav { position: relative; z-index: 2; max-width: 1080px; height: 72px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 700 22px/1 var(--font-display); letter-spacing: -0.02em; }
+.logo-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--ink); display: grid; place-items: center; }
+.logo-mark svg { width: 18px; height: 18px; }
+.links { margin-left: auto; display: flex; gap: 28px; font: 400 14px/1 var(--font-mono); color: var(--ink-2); }
+.links a:hover { color: var(--ink); }
+.nav .cta-sm { margin-left: 28px; }
+
+.btn-glossy { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding-inline: 22px; border-radius: 12px;
+  font: 500 15px/1 var(--font-mono); color: #2a1200;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), inset 0 0 0 1px rgb(150 60 0 / .35);
+  transition: filter 150ms var(--ease), transform 150ms var(--ease); }
+.btn-glossy:hover { filter: brightness(1.04); }
+.btn-glossy:active { transform: scale(.97); }
+.btn-glossy svg { width: 16px; height: 16px; }
+.cta-sm { height: 38px; padding-inline: 14px; font-size: 14px; border-radius: 10px; }
+
+.hero { position: relative; z-index: 1; max-width: 1080px; margin-inline: auto; padding: 88px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+h1 { font: 700 clamp(2.6rem, 6vw, 4.5rem)/1.08 var(--font-display); letter-spacing: -0.035em; max-width: 17ch; }
+.tiles { display: inline-flex; vertical-align: -0.1em; margin-inline: 0.12em; }
+.tiles span { width: 0.92em; height: 0.92em; border-radius: 0.22em; display: grid; place-items: center; margin-left: -0.2em;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08), inset 0 1px 0 rgb(255 255 255 / .35); }
+.tiles span:first-child { margin-left: 0; rotate: -8deg; } .tiles span:nth-child(2) { rotate: 4deg; translate: 0 -0.04em; } .tiles span:nth-child(3) { rotate: 10deg; }
+.tiles svg { width: 0.5em; height: 0.5em; }
+.scribble { position: relative; white-space: nowrap; }
+.scribble svg { position: absolute; left: -2%; bottom: -0.16em; width: 104%; height: 0.32em; overflow: visible; }
+.lead { margin-top: 28px; max-width: 36rem; font: 400 16px/1.7 var(--font-mono); color: var(--ink-2); }
+
+.proof { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.proof-row { display: flex; align-items: center; gap: 12px; }
+.faces { display: flex; }
+.faces span { width: 32px; height: 32px; border-radius: 50%; margin-left: -8px; border: 2px solid var(--canvas); }
+.faces span:first-child { margin-left: 0; }
+.chip { white-space: nowrap; height: 28px; padding-inline: 12px; border-radius: 999px; box-shadow: 0 0 0 1px var(--hairline); background: rgb(255 255 255 / .55); font: 400 13px/28px var(--font-mono); color: var(--ink-2); }
+.chip b { color: var(--ink); font-weight: 500; }
+.quote { display: flex; align-items: center; gap: 8px; font: 400 14px/1 var(--font-mono); color: var(--ink-2); }
+.quote i { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #f7b267, #c2410c); }
+.quote b { color: var(--ink); font-weight: 500; }
+.hero .btn-glossy { margin-top: 36px; }
+.fine { margin-top: 16px; font: 400 13px/1 var(--font-mono); color: var(--ink-3); }
+
+/* product stage */
+.stage { position: relative; z-index: 1; margin-top: 80px; padding: 0 var(--gutter) 120px; }
+.note { position: absolute; right: calc(50% - 560px); top: -56px; display: flex; align-items: center; gap: 8px; font: 400 13px/1 var(--font-mono); color: var(--ink-2); }
+.note svg { width: 48px; height: 36px; }
+.frame { width: min(1040px, 100%); margin-inline: auto; padding: 12px; border-radius: 24px; background: rgb(255 255 255 / .6);
+  box-shadow: inset 0 0 0 1.5px var(--accent-ring), 0 30px 80px -30px rgb(120 60 10 / .3); display: grid; grid-template-columns: 320px 1fr; gap: 12px; }
+.editor { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 0 0 1px var(--hairline); display: flex; flex-direction: column; gap: 20px; }
+.lbl { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--font-mono); color: var(--ink-3); letter-spacing: 0.02em; }
+.lbl svg { width: 14px; height: 14px; }
+.tpl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.tpl span { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 4px; border-radius: 10px; box-shadow: 0 0 0 1px var(--hairline); font: 400 12px/1 var(--font-mono); color: var(--ink-2); }
+.tpl span i { width: 28px; height: 8px; border-radius: 4px; background: #ece5d8; }
+.tpl .on { box-shadow: 0 0 0 1.5px var(--accent); color: color-mix(in oklab, var(--accent) 72%, #000); background: #fff6ee; }
+.tpl .on i { background: var(--accent-light); }
+.field { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.field small { font: 500 12px/1 var(--font-ui); color: var(--ink-2); }
+.field div { height: 40px; padding-inline: 12px; display: flex; align-items: center; border-radius: 10px; box-shadow: 0 0 0 1px var(--hairline); font: 400 14px/1 var(--font-ui); }
+.toggle { display: flex; align-items: center; justify-content: space-between; font: 500 13px/1 var(--font-ui); }
+.toggle i { width: 36px; height: 20px; border-radius: 999px; background: var(--accent); position: relative; }
+.toggle i::after { content: ""; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+
+.render { position: relative; border-radius: 14px; overflow: hidden; min-height: 460px; color: #fff; padding: 28px;
+  display: flex; flex-direction: column;
+  background: radial-gradient(70% 60% at 50% 110%, rgb(255 120 30 / .65), transparent 70%), radial-gradient(50% 40% at 85% 10%, rgb(255 170 80 / .18), transparent 70%), #10131f; }
+.render .handle { display: flex; align-items: center; gap: 8px; font: 400 14px/1 var(--font-mono); color: rgb(255 255 255 / .7); }
+.render .handle i { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #f7b267, #c2410c); }
+.big { margin: auto 0; text-align: center; }
+.big .k { font: 400 14px/1 var(--font-mono); color: rgb(255 255 255 / .6); letter-spacing: 0.04em; }
+.big .v { margin-top: 12px; font: 700 clamp(4rem, 9vw, 7rem)/1 var(--font-display); letter-spacing: -0.04em; }
+.big .d { display: inline-flex; margin-top: 16px; height: 30px; padding-inline: 12px; align-items: center; border-radius: 999px; background: rgb(74 222 128 / .14); color: #86efac; font: 500 13px/1 var(--font-mono); }
+.spark { position: absolute; left: 0; right: 0; bottom: 56px; height: 88px; width: 100%; }
+.made { position: relative; display: flex; justify-content: space-between; font: 400 12px/1 var(--font-mono); color: rgb(255 255 255 / .55); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 280ms; }
+.stage { animation: rise 800ms 380ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 809px) {
+  .links { display: none; } .nav .cta-sm { margin-left: auto; }
+  .hero { padding-top: 48px; }
+  .lead { font-size: 15px; }
+  .doodle, .note { display: none; }
+  .dune { top: 640px; width: 160vw; left: -40vw; }
+  .stage { margin-top: 56px; padding-bottom: 64px; }
+  .frame { grid-template-columns: 1fr; }
+  .editor { display: none; }
+  .render { min-height: 380px; }
+  .proof-row { flex-direction: column; }
+  .quote { flex-wrap: wrap; justify-content: center; text-align: center; line-height: 1.5; padding-inline: 8px; }
+  .quote i { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="dune" aria-hidden="true"></div>
+  <svg class="doodle" viewBox="0 0 190 170" fill="none" stroke="#2a2118" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M118 22 176 6l-24 58-12-22z"/><path d="M140 42 176 6"/><path d="M118 22l22 20"/>
+    <path d="M128 50c-18 18-40 22-58 16s-30-24-18-34 30 4 22 22-34 40-66 50" stroke-dasharray="1 7"/>
+  </svg>
+
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#ff9d48" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 11l4 4 6-8"/></svg></span>Bragcard</a>
+    <div class="links"><a href="#">What</a><a href="#">How</a><a href="#">Who</a><a href="#">Pricing</a></div>
+    <a class="btn-glossy cta-sm" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+  </nav>
+
+  <section class="hero">
+    <h1>Turn your
+      <span class="tiles" aria-hidden="true">
+        <span style="background:#17140f"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 11l4 4 6-8"/></svg></span>
+        <span style="background:#f26a12"><svg viewBox="0 0 24 24" fill="#fff"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></span>
+        <span style="background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#17140f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-3-1.8-5.3-4.5-5.9"/></svg></span>
+      </span>
+      numbers into posts people <span class="scribble">stop for.<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14C40 6 90 4 198 10M30 17c40-5 90-6 150-3" fill="none" stroke="#f26a12" stroke-width="3.2" stroke-linecap="round"/></svg></span></h1>
+    <p class="lead">Your MRR deserves better than a cropped screenshot. Pick a template, type the number, and get a share-ready card for X, LinkedIn or your changelog in ten seconds.</p>
+    <div class="proof">
+      <div class="proof-row">
+        <div class="faces"><span style="background:linear-gradient(135deg,#6b8f71,#2f4f3a)"></span><span style="background:linear-gradient(135deg,#f7b267,#c2410c)"></span><span style="background:linear-gradient(135deg,#9db4e0,#3b5ba8)"></span><span style="background:#efe6d4"></span><span style="background:#efe6d4"></span></div>
+        <span class="chip"><b>1,240 founders</b> post with it weekly</span>
+      </div>
+      <div class="quote"><i aria-hidden="true"></i>“The best-looking MRR post I've shipped.” <b>— @mira_builds</b></div>
+    </div>
+    <a class="btn-glossy" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Make my first card</a>
+    <p class="fine">Free for 3 cards. Then $6/month.</p>
+  </section>
+
+  <section class="stage" aria-label="Card editor preview">
+    <div class="note" aria-hidden="true"><svg viewBox="0 0 48 36" fill="none" stroke="#2a2118" stroke-width="1.8" stroke-linecap="round"><path d="M44 6C30 4 14 10 8 28"/><path d="M3 20l5 9 8-6"/></svg>live preview</div>
+    <div class="frame">
+      <div class="editor">
+        <div>
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Template</div>
+          <div class="tpl"><span><i></i>Metric</span><span class="on"><i></i>Milestone</span><span><i></i>Progress</span><span><i></i>List</span></div>
+        </div>
+        <div>
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Main info</div>
+          <label class="field"><small>Handle</small><div>@mira_builds</div></label>
+          <label class="field"><small>Metric</small><div>MRR</div></label>
+          <label class="field"><small>Value</small><div class="num">$12,400</div></label>
+        </div>
+        <div class="toggle">Show trend line<i aria-hidden="true"></i></div>
+      </div>
+      <div class="render">
+        <div class="handle"><i></i>@mira_builds</div>
+        <div class="big"><div class="k">MRR · OCTOBER</div><div class="v num">$12,400</div><div class="d">+18% vs September</div></div>
+        <svg class="spark" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 80 C60 76 90 70 140 66 S220 60 260 52 330 48 370 40 450 30 500 22 560 12 600 6" fill="none" stroke="#ff9d48" stroke-width="2.5" vector-effect="non-scaling-stroke" opacity=".85"/></svg>
+        <div class="made"><span>miralabs.app</span><span>made with Bragcard</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

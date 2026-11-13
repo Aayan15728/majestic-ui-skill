@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1b62bb">
+<title>Brieflark — meeting notes and answers while you talk</title>
+<style>
+@font-face { font-family: "Geist Serif"; src: url(../fonts/geist-serif-regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+:root {
+  --sky-top: #1b62bb;
+  --sky-text: #2a72c4;      /* the deepest the sky gets behind body text: white passes 4.5:1 */
+  --page: #ffffff;
+  --ink: #0f1c2e;
+  --ink-2: #4a5568;
+  --on-sky: #ffffff;
+  --on-sky-2: rgb(255 255 255 / .92);
+  --action: #1d4ed8;
+  --action-hi: #2f6fe8;
+  --action-ink: #ffffff;
+  --glass: rgb(22 22 26 / .78);
+  --glass-line: rgb(255 255 255 / .12);
+  --app: #141417;
+  --app-2: #1c1c21;
+  --app-ink: rgb(237 237 240);
+  --app-ink-2: #a3a3ad;
+  --warm-1: #fde3c4;
+  --warm-2: #f6b67a;
+  --warm-3: #ef8f4d;
+  --font-display: "Geist Serif", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+::selection { background: rgb(255 255 255 / .3); }
+:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 10px; }
+main { overflow-x: clip; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: #fff; color: var(--ink); font-size: 14px; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+
+/* ---------- atmosphere: sky, sun and peaks painted once to canvas ---------- */
+.stage { position: relative; isolation: isolate; color: var(--on-sky); }
+#sky { position: absolute; inset: 0 0 auto 0; width: 100%; height: 820px; z-index: -1; display: block; }
+
+/* ---------- nav ---------- */
+.nav { max-width: 1200px; height: 72px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 72px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 600 22px/1 var(--font-ui); letter-spacing: -0.03em; }
+.logo svg { width: 22px; height: 22px; }
+.links { display: flex; gap: 28px; font-size: 15px; font-weight: 600; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--on-sky-2); transition: color 150ms var(--ease); }
+.links a:hover { color: #fff; }
+.nav .login { margin-left: auto; display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; font-size: 15px; font-weight: 600; color: var(--on-sky-2); }
+
+/* ---------- hero ---------- */
+.hero { padding: 92px var(--gutter) 0; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hero h1 { font: 400 80px/1.04 var(--font-display); letter-spacing: -0.02em; max-width: 18ch; }
+.rule { width: min(320px, 60%); height: 1px; margin-top: 28px; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent); } /* slop-ok: a hairline that fades at both ends, not a background */
+.lead { margin-top: 24px; max-width: 44ch; font-size: 19px; font-weight: 500; line-height: 1.45; color: var(--on-sky); }
+.cta { margin-top: 36px; display: inline-flex; align-items: center; gap: 10px; height: 48px; padding-inline: 22px; border-radius: 12px; font-size: 16px; font-weight: 600; color: var(--action-ink);
+  background: linear-gradient(180deg, var(--action-hi), var(--action)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .18), 0 10px 30px -8px rgb(37 99 235 / .7); /* slop-ok: the glossy pill is this look's material, chosen with it */
+  transition: transform 150ms var(--ease), filter 150ms var(--ease); }
+.cta:hover { filter: brightness(1.06); }
+.cta:active { transform: scale(.97); }
+.cta svg { width: 16px; height: 16px; }
+.fine { margin-top: 16px; font-size: 14px; font-weight: 500; color: var(--on-sky); }
+
+/* ---------- product preview: a desktop with the assistant over a call ---------- */
+.desk { position: relative; width: 100%; max-width: 1152px; margin: 96px auto 0; text-align: left; border-radius: 18px 18px 0 0; overflow: hidden; aspect-ratio: 1152 / 620;
+  background: radial-gradient(120% 90% at 50% 0%, var(--warm-1), var(--warm-2) 48%, var(--warm-3)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); } /* slop-ok: the wallpaper inside the product frame */
+.desk::before { content: ""; position: absolute; inset: 0; background: repeating-conic-gradient(from 200deg at 50% -10%, rgb(255 255 255 / .1) 0 4deg, transparent 4deg 11deg); mix-blend-mode: soft-light; } /* slop-ok: sun rays on the wallpaper */
+.menubar { position: relative; height: 30px; display: flex; align-items: center; justify-content: space-between; padding-inline: 14px; background: rgb(255 255 255 / .22); color: #fff; }
+.menubar svg { width: 16px; height: 16px; }
+.menubar .r { display: flex; gap: 12px; }
+.pill { position: absolute; left: 50%; top: 44px; translate: -50% 0; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 999px; background: var(--glass); box-shadow: inset 0 0 0 1px var(--glass-line); color: #fff; }
+.pill span { height: 34px; display: inline-flex; align-items: center; gap: 6px; padding-inline: 12px; border-radius: 999px; background: rgb(255 255 255 / .08); font-size: 13px; font-weight: 600; }
+.pill span:first-child, .pill span:last-child { width: 34px; padding: 0; justify-content: center; }
+.pill svg { width: 16px; height: 16px; }
+.pill .rec { width: 10px; height: 10px; border-radius: 2px; background: #fff; }
+.win { position: absolute; left: 50%; top: 104px; translate: -50% 0; width: 66%; bottom: -24px; border-radius: 14px; background: var(--app); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08); overflow: hidden; color: var(--app-ink); }
+.win-top { height: 40px; display: flex; align-items: center; gap: 8px; padding-inline: 14px; border-bottom: 1px solid rgb(255 255 255 / .06); font-size: 13px; color: var(--app-ink-2); }
+.dots { display: flex; gap: 8px; margin-right: 12px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; } .dots i:nth-child(2) { background: #febc2e; } .dots i:nth-child(3) { background: #28c840; }
+.win-top b { color: var(--app-ink); font-weight: 500; }
+.live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #fca5a5; }
+.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #ef4444; }
+.call { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+.tile { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; background: var(--app-2); display: grid; place-items: center; }
+.tile .face { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; font-weight: 600; color: #fff; }
+.tile small { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: var(--app-ink-2); }
+.tile.talk { box-shadow: inset 0 0 0 2px #4ade80; }
+.assist { position: absolute; right: 4%; top: 136px; z-index: 2; width: 330px; border-radius: 16px; padding: 16px; background: var(--glass); box-shadow: inset 0 0 0 1px var(--glass-line); color: var(--app-ink); backdrop-filter: blur(16px); }
+.assist h3 { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--app-ink-2); }
+.assist h3 kbd { font: 500 12px var(--font-ui); padding: 2px 6px; border-radius: 6px; background: rgb(255 255 255 / .1); color: var(--app-ink); }
+.q { margin-top: 12px; font-size: 13px; color: var(--app-ink-2); }
+.q b { color: var(--app-ink); font-weight: 500; }
+.ans { margin-top: 10px; padding: 12px; border-radius: 12px; background: rgb(255 255 255 / .06); font-size: 14px; line-height: 1.5; }
+.ans mark { background: rgb(59 130 246 / .28); color: #fff; border-radius: 4px; padding: 0 4px; }
+.notes { margin-top: 12px; display: grid; gap: 6px; font-size: 13px; color: var(--app-ink-2); padding-left: 18px; }
+.notes li::marker { color: #60a5fa; }
+
+/* ---------- motion ---------- */
+@keyframes rise { from { opacity: 0; translate: 0 14px; } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; } .hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 250ms; }
+.desk { animation: rise 760ms 380ms var(--ease) both; }
+.desk .assist { animation: rise 640ms 760ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- mobile ---------- */
+@media (max-width: 860px) {
+  .links { display: none; }
+  .hero h1 { font-size: 64px; }
+  .win { width: 86%; }
+  .assist { right: 50%; translate: 50% 0; }
+}
+@media (max-width: 600px) {
+  .nav { gap: 24px; }
+  .hero { padding-top: 56px; }
+  .hero h1 { font-size: 44px; }
+  .lead { font-size: 18px; }
+  .cta { width: 100%; justify-content: center; }
+  .desk { margin-top: 112px; aspect-ratio: auto; height: 460px; border-radius: 14px 14px 0 0; }
+  .win-top { white-space: nowrap; }
+  .win-top .people { display: none; }
+  .pill { top: 42px; }
+  .win { width: 92%; top: 96px; }
+  .call { grid-template-columns: 1fr 1fr; }
+  .tile .face { width: 36px; height: 36px; font-size: 13px; }
+  .assist { top: 152px; width: 88%; }
+  .notes { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="stage">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <header class="nav">
+    <a class="logo" href="#main" aria-label="Brieflark home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 15c2-1 3-5 5-6s4 1 5 0"/></svg>
+      Brieflark
+    </a>
+    <nav class="links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#mobile">Mobile</a>
+      <a href="#blog">Blog</a>
+    </nav>
+    <a class="login" href="#login">Log in</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="h">
+      <h1 id="h">Every meeting, already written up</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="lead">Brieflark listens on your laptop, writes the notes as people talk, and suggests an answer when someone asks you something.</p>
+      <a class="cta" href="#download">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1 2.5 6.6 1.7v5.4H1zM7.4 1.6 15 .5v6.6H7.4zM1 7.9h5.6v5.4L1 12.5zM7.4 7.9H15v6.6l-7.6-1.1z"/></svg>
+        Get for Windows
+      </a>
+      <p class="fine">Also on macOS. Free for your first 10 meetings.</p>
+
+      <div class="desk" aria-label="Brieflark running over a video call">
+        <div class="menubar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M7 15c2-1 3-5 5-6s4 1 5 0"/></svg>
+          <span class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="3"/><circle cx="8" cy="12" r="2"/></svg></span>
+        </div>
+        <div class="pill" aria-hidden="true">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M7 15c2-1 3-5 5-6s4 1 5 0"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>Hide</span>
+          <span><i class="rec"></i></span>
+        </div>
+        <div class="win">
+          <div class="win-top"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b>Q4 roadmap review</b><span class="people">&nbsp;· 4 people</span><span class="live">Recording 23:14</span></div>
+          <div class="call">
+            <div class="tile talk"><span class="face" style="background:#b4541a" aria-hidden="true">MO</span><small>Mara Okafor</small></div>
+            <div class="tile"><span class="face" style="background:#0f766e" aria-hidden="true">JL</span><small>Jun Li</small></div>
+            <div class="tile"><span class="face" style="background:#1e40af" aria-hidden="true">You</span><small>You</small></div>
+            <div class="tile"><span class="face" style="background:#57534e" aria-hidden="true">DS</span><small>Dev Sharma</small></div>
+          </div>
+        </div>
+        <div class="assist">
+          <h3>Suggested answer <kbd>⌘&nbsp;↵</kbd></h3>
+          <p class="q">Mara asked: <b>“When can we move the export work into Q4?”</b></p>
+          <p class="ans">Export moves after the billing fix ships on <mark>Nov 18</mark>. Jun estimated <mark>two sprints</mark>, so mid-December is realistic.</p>
+          <ul class="notes">
+            <li>Billing fix ships Nov 18 (Jun)</li>
+            <li>Export needs two sprints after that</li>
+            <li>Dev to share the design review Friday</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* The sky, a low sun and a range of peaks, painted once to canvas at three-quarter resolution.
+   Peaks are a ridged height field lit from the sun on the right, posterized into bands so they read as illustration;
+   the sky stays deep blue behind the text (white keeps 4.5:1) and opens up toward a white horizon. */
+(() => {
+  const c = document.getElementById("sky"), ctx = c.getContext("2d");
+  const h2 = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const sm = (t) => t * t * (3 - 2 * t);
+  const cl = (t) => Math.max(0, Math.min(1, t));
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const a = h2(xi, yi), b = h2(xi + 1, yi), cc = h2(xi, yi + 1), d = h2(xi + 1, yi + 1), u = sm(xf), v = sm(yf);
+    return a + (b - a) * u + (cc - a) * v + (a - b - cc + d) * u * v; };
+  const R = (x, y, o = 6) => { let s = 0, a = .6, f = 1; for (let i = 0; i < o; i++) { const n = 1 - Math.abs(vn(x * f, y * f) * 2 - 1); s += a * n * n; a *= .5; f *= 2.03; } return s; };
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+  function draw() {
+    const W = c.clientWidth, H = c.clientHeight; if (!W) return;
+    const k = 0.75, w = Math.round(W * k), h = Math.round(H * k);   // three-quarter resolution, scaled up by CSS
+    c.width = w; c.height = h;
+    const img = ctx.createImageData(w, h), d = img.data;
+    const mobile = W < 600;
+    const textBottom = (mobile ? 590 : 610) * k;           // the sky keeps its depth down to here
+    const horizon = (mobile ? 700 : 750) * k;
+    const sun = { x: w * (mobile ? .86 : .79), y: horizon - (mobile ? 24 : 48) * k, r: (mobile ? 28 : 54) * k };
+    const S = 1 / (150 * k);
+    // skylines (in px from the top): far haze range, mid range, and the near peaks
+    const far = new Float32Array(w), mid = new Float32Array(w), near = new Float32Array(w);
+    const peaks = mobile ? [[.12, .15, .3], [.62, .1, .22], [.95, .08, .18]] : [[.16, .27, .13], [.29, .15, .09], [.5, .06, .1], [.66, .08, .09], [.86, .05, .14]];
+    for (let x = 0; x < w; x++) {
+      const u = x / w;
+      far[x] = horizon - h * (.03 + .05 * R(x * S * .6, 2.1, 4));
+      mid[x] = horizon + 6 * k - h * (.02 + .07 * R(x * S * 1.1, 5.3, 5));
+      let p = 0;
+      for (const [px, ph, pw] of peaks) { const t = Math.abs(u - px) / pw; if (t < 1) p = Math.max(p, ph * Math.pow(1 - t, 1.25) * (.86 + .28 * R(x * S * 3.2, px * 9, 4))); }
+      near[x] = horizon + 30 * k - h * p;
+    }
+    const L = [.62, -.5, .6]; const ll = Math.hypot(...L); L[0] /= ll; L[1] /= ll; L[2] /= ll;   // sun on the right
+    const skyCol = (y) => {
+      const t = y / h;
+      if (y < textBottom) return mix([27, 98, 187], [42, 114, 196], y / textBottom);
+      const q = cl((y - textBottom) / (horizon - textBottom));
+      return q < .6 ? mix([42, 114, 196], [121, 184, 234], sm(q / .6)) : mix([121, 184, 234], [226, 241, 251], sm((q - .6) / .4));
+    };
+    const rock = (X, Y, layerHaze, top, y, seed) => {
+      const e = S * .8;
+      const Hf = (a, b) => R(a * 1.1 + seed, b * .8 + seed, 4) * .85 + R(a * 2.6, b * 2 + seed, 2) * .05;
+      const hx = (Hf(X + e, Y) - Hf(X - e, Y)) / (2 * e), hy = (Hf(X, Y + e) - Hf(X, Y - e)) / (2 * e);
+      let nx = -hx * .5, ny = -hy * .5 + .15, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+      let lit = cl(nx * L[0] + ny * L[1] + nz * L[2]);
+      lit = Math.round(lit * 5) / 5;                              // posterize: illustrated bands
+      let col = mix([22, 76, 176], [124, 182, 243], lit);
+      const depth = cl((y - top) / (60 * k));
+      if (lit >= .8 && depth < .7) col = mix(col, [240, 247, 255], .8 * (1 - depth));   // snow on sunlit faces near the ridge
+      col = mix(col, [205, 228, 248], cl(layerHaze + (y - top) / (h * .5)));  // haze thickens downward
+      return col;
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let col;
+      if (y >= near[x]) col = rock(x * S, y * S, .04, near[x], y, 3.7);
+      else if (y >= mid[x]) col = mix(rock(x * S * 1.3, y * S * 1.3, .45, mid[x], y, 9.1), [214, 234, 250], .45);
+      else if (y >= far[x]) col = mix([168, 203, 238], [228, 241, 252], cl((y - far[x]) / (40 * k)) * .7 + .2);
+      else {
+        col = skyCol(y);
+        const dx = x - sun.x, dy = y - sun.y, dd = Math.hypot(dx, dy);
+        const glow = Math.exp(-((dd / (sun.r * (mobile ? 2.6 : 3.4))) ** 2)) * .8 + Math.exp(-((dy / (sun.r * .3)) ** 2) - (dx / (w * .2)) ** 2) * .5;
+        col = mix(col, [255, 255, 255], cl(glow));
+        if (dd < sun.r) col = [255, 255, 255];
+      }
+      // white fog at the base, then the page
+      const fog = sm(cl((y - (horizon - 10 * k)) / (h - horizon + 10 * k)));
+      col = mix(col, [255, 255, 255], fog);
+      const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  draw();
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+})();
+</script>
+</body>
+</html>

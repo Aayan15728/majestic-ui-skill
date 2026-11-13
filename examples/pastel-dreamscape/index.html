@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#9cc6f2">
+<title>Softfield — 3D worlds for brands that want to be visited</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-300-normal.woff2) format("woff2"); font-weight: 300; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --sky-top: #8fbdf0;
+  --sky-mid: #c4dbf6;
+  --sky-low: #f7d9e2;
+  --ink: #12243a;
+  --ink-2: rgb(18 36 58 / .72);
+  --on-sky: #12243a;
+  --frame: rgb(255 255 255 / .42);
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--sky-top); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.55 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- atmosphere: pastel sky + illustrated landscape ---------- */
+.scene { position: relative; min-height: max(860px, 100svh);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) 74%, #fde9e4 100%); }
+.land { position: absolute; inset: auto 0 0 0; width: 100%; height: 56%; pointer-events: none; }
+.land svg { width: 100%; height: 100%; display: block; }
+.cloud { position: absolute; border-radius: 999px; background: rgb(255 255 255 / .72); filter: blur(1px); pointer-events: none; }
+.cloud::before, .cloud::after { content: ""; position: absolute; border-radius: 50%; background: inherit; }
+.cloud.c1 { left: 40%; top: 96px; width: 180px; height: 44px; }
+.cloud.c1::before { left: 32px; top: -28px; width: 72px; height: 64px; } .cloud.c1::after { left: 84px; top: -18px; width: 56px; height: 48px; }
+.cloud.c2 { right: 8%; top: 420px; width: 140px; height: 36px; opacity: .8; }
+.cloud.c2::before { left: 24px; top: -22px; width: 56px; height: 52px; } .cloud.c2::after { left: 64px; top: -14px; width: 44px; height: 40px; }
+
+/* signature: thin vertical frame lines at the gutters, repeated around the work row */
+.frame { position: absolute; inset: 0; max-width: 1280px; margin-inline: auto; pointer-events: none; }
+.frame::before, .frame::after { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--frame); }
+.frame::before { left: var(--gutter); } .frame::after { right: var(--gutter); }
+
+/* ---------- nav ---------- */
+.nav { position: relative; z-index: 2; max-width: 1280px; height: 76px; margin-inline: auto; padding-inline: calc(var(--gutter) + 24px); display: flex; align-items: center; gap: 40px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 500 19px/1 var(--font-ui); letter-spacing: -0.02em; color: var(--ink); }
+.logo svg { width: 24px; height: 24px; }
+.links { display: flex; gap: 32px; font-size: 15px; color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.call { margin-left: auto; display: inline-flex; align-items: center; height: 40px; padding-inline: 18px; border-radius: 999px; background: rgb(255 255 255 / .4); color: var(--ink); font-size: 15px; font-weight: 500;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .5); backdrop-filter: blur(8px); transition: background-color 150ms var(--ease); }
+.call:hover { background: rgb(255 255 255 / .6); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; z-index: 2; max-width: 1280px; margin-inline: auto; padding: 96px calc(var(--gutter) + 24px) 0; display: grid; grid-template-columns: 1.35fr 1fr; gap: 48px; align-items: end; }
+h1 { font: 300 clamp(3rem, 6.6vw, 6.25rem)/0.98 var(--font-ui); letter-spacing: -0.045em; color: var(--on-sky); max-width: 11ch; }
+.side { padding-bottom: 12px; }
+.lead { font-size: 19px; line-height: 1.5; color: var(--ink-2); max-width: 30ch; }
+.cta { margin-top: 28px; display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 8px 0 24px; border-radius: 999px; background: #fff; color: var(--ink); font-weight: 500;
+  transition: transform 150ms var(--ease); }
+.cta:active { transform: scale(.97); }
+.cta span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: #fff; }
+.cta svg { width: 16px; height: 16px; }
+.avail { margin-top: 16px; display: flex; align-items: center; gap: 8px; font: 400 13px/1 var(--font-mono); color: var(--ink-2); }
+.avail i { width: 8px; height: 8px; border-radius: 50%; background: #2f9e5e; box-shadow: 0 0 0 3px rgb(47 158 94 / .2); }
+
+/* ---------- recent work row ---------- */
+.work { position: absolute; z-index: 2; left: 0; right: 0; bottom: 40px; max-width: 1280px; margin-inline: auto; padding-inline: calc(var(--gutter) + 24px); }
+.work-head { display: flex; justify-content: space-between; align-items: baseline; color: var(--ink); font-size: 15px; }
+.work-head b { font-weight: 500; }
+.work-head a { color: var(--ink-2); } .work-head a:hover { color: var(--ink); }
+.thumbs { margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.thumb { position: relative; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6), 0 24px 48px -24px rgb(18 36 58 / .35); transition: transform 200ms var(--ease); }
+.thumb:hover { transform: translateY(-4px); }
+.thumb svg { width: 100%; height: 100%; display: block; }
+.thumb figcaption { position: absolute; left: 12px; bottom: 12px; padding: 4px 10px; border-radius: 999px; background: rgb(255 255 255 / .85); font-size: 12px; font-weight: 500; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+.hero h1, .side, .work { animation: rise 760ms var(--ease) both; }
+.side { animation-delay: 120ms; } .work { animation-delay: 260ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links { display: none; }
+  .nav { padding-inline: var(--gutter); }
+  .frame { display: none; }
+  .scene { min-height: 0; padding-bottom: 32px; }
+  .hero { grid-template-columns: 1fr; padding: 48px var(--gutter) 0; gap: 24px; }
+  .land { height: 420px; top: 380px; }
+  .work { position: relative; bottom: auto; margin-top: 260px; padding-inline: var(--gutter); }
+  .thumbs { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cloud { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="scene">
+    <span class="cloud c1" aria-hidden="true"></span><span class="cloud c2" aria-hidden="true"></span>
+    <div class="land" aria-hidden="true">
+      <svg viewBox="0 0 1440 500" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3ee"/><stop offset="1" stop-color="#c9ecf3"/></linearGradient>
+          <linearGradient id="hillA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe7c9"/><stop offset="1" stop-color="#93d1a8"/></linearGradient>
+          <linearGradient id="hillB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd5bd"/><stop offset="1" stop-color="#f6b89c"/></linearGradient>
+          <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0dc"/><stop offset="1" stop-color="#f9dfc3"/></linearGradient>
+          <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6e0"/><stop offset="1" stop-color="#ffe3c4" stop-opacity="0"/></radialGradient>
+        </defs>
+        <circle cx="1060" cy="120" r="150" fill="url(#sun)"/>
+        <circle cx="1060" cy="120" r="46" fill="#fff4e2"/>
+        <rect y="150" width="1440" height="120" fill="url(#sea)"/>
+        <path d="M0 160h1440" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>
+        <path d="M120 200h90M300 228h60M940 210h120M1180 240h70" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+        <path d="M-20 250C160 170 330 180 470 240S760 300 900 230 1180 150 1460 230V500H-20Z" fill="url(#hillB)"/>
+        <path d="M-20 330C200 260 420 280 610 330S980 380 1180 310 1380 280 1460 300V500H-20Z" fill="url(#hillA)"/>
+        <path d="M-20 420C260 380 520 400 760 430S1200 450 1460 400V500H-20Z" fill="url(#sand)"/>
+        <!-- house -->
+        <g transform="translate(1110 232)">
+          <rect x="0" y="34" width="96" height="62" rx="6" fill="#fffaf3"/>
+          <path d="M-10 40 48 0l58 40Z" fill="#f4a7b9"/>
+          <rect x="16" y="54" width="20" height="20" rx="4" fill="#a6d4ef"/><rect x="58" y="58" width="22" height="38" rx="4" fill="#f4a7b9"/>
+        </g>
+        <!-- palms -->
+        <g fill="none" stroke-linecap="round">
+          <path d="M300 420C306 370 300 330 284 296" stroke="#d7a77f" stroke-width="10"/>
+          <path d="M284 296c-40-16-74-6-92 18M284 296c-20-36-52-46-80-38M284 296c18-38 52-46 84-30M284 296c42-6 70 12 82 40M284 296c-6 28-24 44-48 54" stroke="#7cc79a" stroke-width="12"/>
+          <path d="M1290 440c4-42 0-74-12-104" stroke="#d7a77f" stroke-width="8"/>
+          <path d="M1278 336c-30-12-56-4-70 14M1278 336c-14-28-40-36-62-30M1278 336c14-30 40-36 66-24M1278 336c32-4 54 10 64 32" stroke="#7cc79a" stroke-width="10"/>
+        </g>
+        <!-- pebbles -->
+        <ellipse cx="640" cy="452" rx="34" ry="12" fill="#f3cdb8"/><ellipse cx="690" cy="460" rx="18" ry="7" fill="#e9bba4"/>
+        <circle cx="480" cy="372" r="22" fill="#ffd0dc"/><circle cx="512" cy="380" r="14" fill="#ffe0e8"/>
+      </svg>
+    </div>
+    <div class="frame" aria-hidden="true"></div>
+
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 14c3-3 6-3 9 0s6 3 9 0"/></svg>Softfield</a>
+      <div class="links"><a href="#">Work</a><a href="#">Studio</a><a href="#">Process</a><a href="#">Journal</a></div>
+      <a class="call" href="#">Book a call</a>
+    </nav>
+
+    <section class="hero" aria-labelledby="h">
+      <h1 id="h">Worlds people want to stay in</h1>
+      <div class="side">
+        <p class="lead">We build soft, playable 3D scenes for brand launches, product drops and the homepage you keep meaning to redo.</p>
+        <a class="cta" href="#">Start a project<span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+        <p class="avail"><i aria-hidden="true"></i>Two slots open for December</p>
+      </div>
+    </section>
+
+    <section class="work" aria-labelledby="w">
+      <div class="work-head"><b id="w">Recent work</b><a href="#">All 24 projects</a></div>
+      <div class="thumbs">
+        <figure class="thumb" style="margin:0"><svg viewBox="0 0 400 300" aria-hidden="true"><rect width="400" height="300" fill="#ffe1d2"/><circle cx="290" cy="90" r="40" fill="#fff4e2"/><path d="M0 220c80-50 160-40 240 0s120 30 160 10v70H0Z" fill="#f6b89c"/><rect x="90" y="140" width="70" height="90" rx="35" fill="#fff"/></svg><figcaption>Pebble Tea launch</figcaption></figure>
+        <figure class="thumb" style="margin:0"><svg viewBox="0 0 400 300" aria-hidden="true"><rect width="400" height="300" fill="#cfe6fb"/><path d="M0 200h400v100H0Z" fill="#9fd3ee"/><circle cx="200" cy="170" r="56" fill="#fff"/><circle cx="200" cy="170" r="24" fill="#f4a7b9"/></svg><figcaption>Driftwood audio</figcaption></figure>
+        <figure class="thumb" style="margin:0"><svg viewBox="0 0 400 300" aria-hidden="true"><rect width="400" height="300" fill="#d9f2df"/><path d="M60 240 150 100l90 140Z" fill="#93d1a8"/><path d="M170 240 250 130l80 110Z" fill="#bfe7c9"/><rect y="236" width="400" height="64" fill="#fff0dc"/></svg><figcaption>Meadow outdoor</figcaption></figure>
+        <figure class="thumb" style="margin:0"><svg viewBox="0 0 400 300" aria-hidden="true"><rect width="400" height="300" fill="#fde2ea"/><rect x="120" y="80" width="160" height="160" rx="40" fill="#fff"/><rect x="150" y="110" width="100" height="100" rx="24" fill="#a6d4ef"/></svg><figcaption>Loop app icons</figcaption></figure>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

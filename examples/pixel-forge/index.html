@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#3d5cf5">
+<title>Bitgrove — turn your ideas into pixel art</title>
+<style>
+@font-face { font-family: "Geist Pixel"; src: url(../fonts/geist-pixel-square.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+:root {
+  --field: #3d5cf5;
+  --field-light: #6f86ff;
+  --page: #ffffff;
+  --ink: #121318;
+  --ink-2: color-mix(in oklab, var(--ink) 66%, white);
+  --ink-3: color-mix(in oklab, var(--ink) 48%, white);
+  --hairline: rgb(18 19 24 / .12);
+  --accent: #2f55f2;
+  --font-pixel: "Geist Pixel", ui-monospace, monospace;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 48px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--field); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--accent); color: #fff; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---------- atmosphere: a blue field of pixels, the white page cut out of it ---------- */
+.field { position: relative; isolation: isolate; padding: 40px var(--gutter); min-height: 100svh; }
+#bits { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; image-rendering: pixelated; }
+.page { max-width: 1240px; margin-inline: auto; background: var(--page); box-shadow: 8px 8px 0 rgb(18 19 24 / .18); } /* slop-ok: the stepped pixel offset shadow is this world's depth, no blur */
+
+/* ---------- nav ---------- */
+.nav { height: 72px; padding-inline: 32px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 400 20px/1 var(--font-pixel); }
+.logo svg { width: 28px; height: 20px; }
+.links { display: flex; gap: 32px; font-size: 14px; font-weight: 500; }
+.links a:hover { color: var(--accent); }
+.nav-r { justify-self: end; display: flex; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding-inline: 14px; font-size: 14px; font-weight: 500;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.out { color: var(--accent); outline: 1.5px dashed var(--accent); outline-offset: -1.5px; }
+.btn.out:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.btn.out:hover { background: #eef1ff; }
+.btn.fill { background: var(--accent); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px var(--accent); }
+.btn.fill:hover { background: #2446d6; }
+
+/* ---------- copy ---------- */
+.copy { padding: 48px 32px 32px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+h1 { font: 400 clamp(2.25rem, 4.6vw, 4rem)/1.08 var(--font-pixel); letter-spacing: -0.01em; max-width: 18ch; }
+h1 span { color: var(--accent); }
+.lead { margin-top: 16px; max-width: 52ch; font-size: 16px; color: var(--ink-2); }
+
+/* ---------- the pixel landscape with the prompt over it ---------- */
+.scene { position: relative; height: 360px; display: grid; place-items: center; }
+#grove { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.prompt { position: relative; width: min(400px, calc(100% - 40px)); display: flex; background: #fff; box-shadow: 0 0 0 1px var(--hairline), 4px 4px 0 rgb(18 19 24 / .2); } /* slop-ok: stepped pixel shadow */
+.prompt label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.prompt input { flex: 1; min-width: 0; height: 40px; padding-inline: 12px; border: 0; font: 400 14px/1 var(--font-ui); color: var(--ink); background: transparent; }
+.prompt input::placeholder { color: var(--ink-3); }
+.prompt input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+.prompt button { height: 40px; padding-inline: 16px; border: 0; background: var(--accent); color: #fff; font: 500 14px/1 var(--font-ui); cursor: pointer; transition: background-color 150ms var(--ease); }
+.prompt button:hover { background: #2446d6; }
+.legal { padding: 28px 32px 32px; text-align: center; font-size: 12px; color: var(--ink-3); }
+.legal a { color: var(--ink); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.copy > * { animation: rise 600ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 80ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 760px) {
+  .field { padding: 16px 12px; }
+  .nav { grid-template-columns: 1fr auto; padding-inline: 16px; }
+  .links, .btn.out { display: none; }
+  .copy { padding: 32px 16px 24px; }
+  .scene { height: 300px; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="field">
+    <canvas id="bits" aria-hidden="true"></canvas>
+    <div class="page">
+      <nav class="nav" aria-label="Main">
+        <a class="logo" href="#"><svg viewBox="0 0 28 20" aria-hidden="true"><rect x="0" y="8" width="4" height="4" fill="#6f86ff"/><rect x="4" y="4" width="8" height="12" fill="#2f55f2"/><rect x="12" y="4" width="4" height="4" fill="#2f55f2"/><rect x="12" y="12" width="4" height="4" fill="#2f55f2"/><rect x="18" y="0" width="4" height="4" fill="#6f86ff"/><rect x="22" y="12" width="4" height="4" fill="#a9b8ff"/></svg>Bitgrove</a>
+        <div class="links"><a href="#">Gallery</a><a href="#">Community</a><a href="#">Docs</a></div>
+        <div class="nav-r"><a class="btn out" href="#">Log in</a><a class="btn fill" href="#">Sign up</a></div>
+      </nav>
+      <div class="copy">
+        <h1>Turn your ideas into pixel art <span>–</span> instantly</h1>
+        <p class="lead">Describe a place in a sentence. Bitgrove paints it as a 16-color pixel scene you can tile, animate and export at any size.</p>
+      </div>
+      <div class="scene">
+        <canvas id="grove" aria-hidden="true"></canvas>
+        <form class="prompt" onsubmit="return false">
+          <label for="p">Describe your pixel world</label>
+          <input id="p" type="text" placeholder="A pine valley with a river at noon…" autocomplete="off">
+          <button type="submit">Generate</button>
+        </form>
+      </div>
+      <p class="legal">By using Bitgrove you agree to our <a href="#">Terms of Service</a> and acknowledge our <a href="#">Privacy Policy</a>.</p>
+    </div>
+  </div>
+</main>
+<script>
+const h2 = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+const sm = (t) => t * t * (3 - 2 * t);
+const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = h2(xi, yi), b = h2(xi + 1, yi), c = h2(xi, yi + 1), d = h2(xi + 1, yi + 1), u = sm(xf), v = sm(yf);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+const dither = (x, y, t) => t * 16 > BAYER[y & 3][x & 3];
+
+// The blue field: big pixels in two tints, denser near the page edge, plus a stepped dissolve.
+(() => {
+  const c = document.getElementById("bits"), ctx = c.getContext("2d");
+  function draw() {
+    const P = 12, W = Math.ceil(c.clientWidth / P), H = Math.ceil(c.clientHeight / P); c.width = W; c.height = H;
+    ctx.fillStyle = "#3d5cf5"; ctx.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const r = h2(x, y); if (r < .06) { ctx.fillStyle = r < .025 ? "#6f86ff" : "#4f6cff"; ctx.fillRect(x, y, 1, 1); }
+    }
+  }
+  draw(); let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+})();
+
+// The grove: painted at 1/6 resolution and scaled up with no smoothing.
+(() => {
+  const c = document.getElementById("grove"), ctx = c.getContext("2d");
+  function draw() {
+    const P = c.clientWidth < 600 ? 4 : 6, W = Math.ceil(c.clientWidth / P), H = Math.ceil(c.clientHeight / P); c.width = W; c.height = H;
+    const img = ctx.createImageData(W, H), d = img.data;
+    const put = (x, y, col) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255; };
+    const skyA = [126, 195, 240], skyB = [196, 230, 247], hill = [111, 174, 142], hillT = [140, 196, 160], grass = [98, 164, 74], grassL = [128, 190, 88], water = [74, 163, 216], waterL = [168, 220, 245];
+    const horizon = Math.round(H * .48);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (y < horizon) { const t = y / horizon; put(x, y, dither(x, y, t) ? skyB : skyA); }
+      else put(x, y, dither(x, y, (y - horizon) / (H - horizon) * .5) ? grassL : grass);
+    }
+    for (let k = 0; k < 7; k++) { const cx = h2(k, 2) * W, cy = 4 + h2(k, 5) * horizon * .45, rw = 6 + h2(k, 7) * 10;
+      for (let y = -4; y <= 3; y++) for (let x = -rw; x <= rw; x++) if ((x / rw) ** 2 + ((y + .5) / 3.6) ** 2 < 1 - h2(x + k, y) * .25) put(Math.round(cx + x), Math.round(cy + y), y > 1 ? [222, 236, 246] : [255, 255, 255]); }
+    for (let x = 0; x < W; x++) { const top = Math.round(horizon - 6 - 6 * Math.sin(x / W * Math.PI * 1.2 + .4) - 3 * vn(x / 8, 1)); for (let y = top; y < horizon + 2; y++) put(x, y, y < top + 2 ? hillT : hill); }
+    const river = (y) => W * .5 + Math.sin(y / 5) * 5 + (y - horizon) * (y - horizon) * .02 * Math.sin(y / 9);
+    for (let y = horizon + 1; y < H; y++) { const half = 1 + (y - horizon) * .35, cx = river(y);
+      for (let x = Math.round(cx - half); x <= Math.round(cx + half); x++) put(x, y, h2(x, y) < .14 ? waterL : water); }
+    const pine = (px, base, ht, dark, light) => { for (let y = 0; y < ht; y++) { const half = Math.round((y / ht) * ht * .32 + (y % 4 === 3 ? -1 : 0));
+        for (let x = -half; x <= half; x++) put(px + x, base - ht + y, x < -half / 3 ? light : dark); }
+      for (let y = 0; y < 3; y++) put(px, base + y, [92, 60, 40]); };
+    for (let k = 0; k < W / 3; k++) { const px = Math.round(h2(k, 11) * W), ht = 8 + Math.round(h2(k, 13) * 8); if (Math.abs(px - river(horizon + 4)) < 4) continue; pine(px, horizon + 4 + Math.round(h2(k, 3) * 3), ht, [38, 104, 70], [62, 138, 88]); }
+    [[.04, 44], [.11, 36], [.17, 30], [.84, 32], [.9, 40], [.97, 46]].forEach(([x, ht]) => pine(Math.round(x * W), H - 2, ht, [22, 72, 48], [40, 110, 70]));
+    for (let k = 0; k < 40; k++) put(Math.round(h2(k, 21) * W), horizon + 6 + Math.round(h2(k, 23) * (H - horizon - 8)), [248, 236, 140]);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const e = Math.min(x, W - 1 - x) / W; if (e < .06 && h2(x * 3, y * 7) > e / .06) { const i = (y * W + x) * 4; d[i + 3] = 0; } }
+    ctx.putImageData(img, 0, 0);
+  }
+  draw(); let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#3a6dff">
+<title>Fundle — savings that happen while you live</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Bricolage"; src: url(../fonts/bricolage-grotesque-latin-800-normal.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --edge-a: #3a6dff;
+  --edge-b: #ff8a3d;
+  --page: #ffffff;
+  --ink: #0e1220;
+  --ink-2: color-mix(in oklab, var(--ink) 64%, white);
+  --ink-3: color-mix(in oklab, var(--ink) 46%, white);
+  --hairline: rgb(14 18 32 / .09);
+  --accent: #3a6dff;
+  --good: #129e5b;
+  --font-display: "Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+  --frame: 10px;
+}
+@media (min-width: 810px) { :root { --gutter: 48px; --frame: 14px; } }
+*, *::before, *::after { box-sizing: border-box; }
+/* atmosphere: the whole viewport is a gradient frame around one white page */
+html { background: linear-gradient(135deg, var(--edge-a) 0%, #7f8cff 38%, #ffb08a 70%, var(--edge-b) 100%) fixed; }
+body { margin: 0; padding: var(--frame); min-height: 100vh; color: var(--ink); font: 400 17px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+main { overflow-x: clip; background: var(--page); border-radius: 28px; min-height: calc(100vh - 2 * var(--frame)); box-shadow: 0 1px 0 rgb(255 255 255 / .6) inset; }
+
+/* ---------- nav ---------- */
+.nav { max-width: 1240px; height: 80px; margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; gap: 48px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 800 24px/1 var(--font-display); letter-spacing: -0.03em; }
+.logo i { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, var(--edge-a), var(--edge-b)); display: grid; place-items: center; }
+.logo i::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+.links { display: flex; gap: 32px; font: 500 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--ink); }
+.nav-r { margin-left: auto; display: flex; align-items: center; gap: 20px; font-weight: 500; font-size: 15px; }
+.nav-r .sign { color: var(--ink-2); } .nav-r .sign:hover { color: var(--ink); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding-inline: 20px; border-radius: 999px; font-weight: 600; font-size: 15px;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.dark { background: var(--ink); color: #fff; }
+.btn.dark:hover { background: #242a3d; }
+
+/* ---------- hero ---------- */
+.hero { max-width: 1240px; margin-inline: auto; padding: 72px var(--gutter) 96px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.rating { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-2); }
+.stars { display: inline-flex; gap: 2px; color: #f5a524; }
+.stars svg { width: 16px; height: 16px; }
+h1 { margin-top: 24px; font: 800 clamp(3rem, 6vw, 5.5rem)/0.96 var(--font-display); letter-spacing: -0.045em; }
+h1 span { color: var(--ink-3); }
+.lead { margin-top: 24px; max-width: 34ch; font-size: 19px; color: var(--ink-2); }
+.ctas { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+.btn.lg { height: 56px; padding-inline: 28px; font-size: 17px; }
+.btn.line { box-shadow: inset 0 0 0 1px var(--hairline); background: #fff; }
+.btn.line:hover { background: #f6f7fb; }
+.btn svg { width: 18px; height: 18px; }
+.fine { margin-top: 20px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: var(--ink-3); }
+.fine span { display: inline-flex; align-items: center; gap: 6px; }
+.fine svg { width: 16px; height: 16px; color: var(--good); }
+
+/* ---------- product card: gradient echo of the frame + phone + data chips ---------- */
+.card { position: relative; height: 600px; border-radius: 24px; background: linear-gradient(160deg, #dfe6ff 0%, #eef0ff 46%, #ffe6d6 100%); box-shadow: inset 0 0 0 1px var(--hairline); display: grid; place-items: end center; }
+.phone { position: relative; width: 290px; height: 540px; border-radius: 44px 44px 0 0; padding: 12px 12px 0; background: #0e1220; box-shadow: 0 -24px 64px -32px rgb(14 18 32 / .45); }
+.screen { height: 100%; border-radius: 34px 34px 0 0; background: #fbfbfd; overflow: hidden; padding: 44px 20px 0; }
+.notch { position: absolute; top: 22px; left: 50%; translate: -50% 0; width: 92px; height: 26px; border-radius: 20px; background: #0e1220; }
+.s-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
+.s-top b { color: var(--ink); font-weight: 600; font-size: 15px; }
+.bal { margin-top: 20px; font-size: 13px; color: var(--ink-3); }
+.bal b { display: block; margin-top: 4px; font: 800 40px/1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); }
+.bal em { font-style: normal; color: var(--good); font-weight: 500; }
+.goal { margin-top: 20px; padding: 14px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--hairline); }
+.goal-h { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; }
+.goal-h span { color: var(--ink-3); font-weight: 500; }
+.track { margin-top: 10px; height: 8px; border-radius: 8px; background: #eef0f6; overflow: hidden; }
+.track i { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--edge-a), var(--edge-b)); }
+.list { margin-top: 16px; display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--hairline); }
+.row i { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-style: normal; font-size: 13px; font-weight: 600; }
+.row small { display: block; color: var(--ink-3); font-size: 12px; }
+.row b { font-weight: 600; }
+.row b.up { color: var(--good); }
+
+/* signature: floating chips that quote the numbers on the phone */
+.float { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 10px; border-radius: 16px; background: #fff; font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--hairline), 0 20px 40px -20px rgb(14 18 32 / .35); }
+.float i { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; }
+.float i svg { width: 18px; height: 18px; }
+.float small { display: block; color: var(--ink-3); font-size: 12px; line-height: 1.2; }
+.float b { font-weight: 600; line-height: 1.3; }
+.f1 { left: -28px; top: 120px; } .f2 { right: -24px; top: 272px; } .f3 { right: -24px; bottom: 112px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.copy > * { animation: rise 680ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; }
+.copy > :nth-child(4) { animation-delay: 210ms; } .copy > :nth-child(5) { animation-delay: 280ms; }
+.card { animation: rise 900ms 300ms var(--ease) both; }
+.float { animation: rise 700ms var(--ease) both; } .f1 { animation-delay: 700ms; } .f2 { animation-delay: 800ms; } .f3 { animation-delay: 900ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 899px) {
+  .links, .nav-r .sign { display: none; }
+  main { border-radius: 20px; }
+  .hero { grid-template-columns: 1fr; padding-top: 40px; padding-bottom: 48px; gap: 40px; }
+  .card { height: 520px; }
+  .phone { width: 252px; height: 468px; }
+  .f1 { left: 8px; top: 40px; } .f2 { right: 8px; top: 236px; } .f3 { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <nav class="nav" aria-label="Main">
+    <a class="logo" href="#"><i aria-hidden="true"></i>Fundle</a>
+    <div class="links"><a href="#">How it works</a><a href="#">Goals</a><a href="#">Security</a><a href="#">Pricing</a></div>
+    <div class="nav-r"><a class="sign" href="#">Sign in</a><a class="btn dark" href="#">Get the app</a></div>
+  </nav>
+
+  <section class="hero">
+    <div class="copy">
+      <p class="rating"><span class="stars" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.5 2 4.2 4.6.6-3.4 3.2.9 4.5L8 11.8 3.9 14l.9-4.5L1.4 6.3 6 5.7z"/></svg><svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.5 2 4.2 4.6.6-3.4 3.2.9 4.5L8 11.8 3.9 14l.9-4.5L1.4 6.3 6 5.7z"/></svg><svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.5 2 4.2 4.6.6-3.4 3.2.9 4.5L8 11.8 3.9 14l.9-4.5L1.4 6.3 6 5.7z"/></svg><svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.5 2 4.2 4.6.6-3.4 3.2.9 4.5L8 11.8 3.9 14l.9-4.5L1.4 6.3 6 5.7z"/></svg><svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.5 2 4.2 4.6.6-3.4 3.2.9 4.5L8 11.8 3.9 14l.9-4.5L1.4 6.3 6 5.7z"/></svg>
+      </span><span class="num">4.8 from 9,300 App Store ratings</span></p>
+      <h1>Save while you live. <span>Not instead.</span></h1>
+      <p class="lead">Fundle rounds up every card payment and moves the change into goals you named, so the trip fund grows while you buy coffee.</p>
+      <div class="ctas">
+        <a class="btn dark lg" href="#">Start saving</a>
+        <a class="btn line lg" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z" fill="currentColor"/></svg>See it in 40 seconds</a>
+      </div>
+      <p class="fine">
+        <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3 8.5 3 3 7-7"/></svg>Free for the first 3 months</span>
+        <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m3 8.5 3 3 7-7"/></svg>Insured up to $250k</span>
+      </p>
+    </div>
+
+    <div class="card" aria-label="Fundle app preview">
+      <div class="phone">
+        <span class="notch" aria-hidden="true"></span>
+        <div class="screen">
+          <div class="s-top"><b>Savings</b><span class="num">Nov 2026</span></div>
+          <p class="bal">Saved this year<b class="num">$3,482.60</b><em class="num">+$118.40 this week</em></p>
+          <div class="goal">
+            <div class="goal-h">Lisbon in May<span class="num">68%</span></div>
+            <div class="track"><i style="width:68%"></i></div>
+          </div>
+          <div class="list">
+            <div class="row"><i style="background:#eef2ff;color:#3a6dff">Cf</i><span>Corner café<small>Rounded from $3.40</small></span><b class="up num">+$0.60</b></div>
+            <div class="row"><i style="background:#fff1e8;color:#d4621c">Gr</i><span>Greenmarket<small>Rounded from $27.15</small></span><b class="up num">+$0.85</b></div>
+            <div class="row"><i style="background:#eafaf1;color:#129e5b">Tx</i><span>Ride home<small>Rounded from $11.80</small></span><b class="up num">+$0.20</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="float f1"><i style="background:#eef2ff;color:#3a6dff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></i><span><small>This week</small><b class="num">+$118.40</b></span></div>
+      <div class="float f2"><i style="background:#fff1e8;color:#d4621c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></i><span><small>Lisbon in May</small><b class="num">68% there</b></span></div>
+      <div class="float f3"><i style="background:#eafaf1;color:#129e5b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 11l3-3 3 3"/></svg></i><span><small>Round-ups today</small><b class="num">14 payments</b></span></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

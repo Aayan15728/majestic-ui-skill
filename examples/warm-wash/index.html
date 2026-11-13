@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fffdfb">
+<title>Openlytics — analytics that counts customers</title>
+<style>
+@font-face { font-family: "Funnel Display"; src: url(../fonts/funnel-display-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Funnel Display"; src: url(../fonts/funnel-display-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  --canvas: #fffdfb;
+  --ink: #141210;
+  --ink-2: color-mix(in oklab, var(--ink) 66%, var(--canvas));
+  --ink-3: color-mix(in oklab, var(--ink) 50%, var(--canvas));
+  --hairline: color-mix(in oklab, var(--ink) 9%, transparent);
+  --accent: #f0623a;
+  --accent-deep: #c2410c;
+  --wash-1: #ffcdb2; --wash-2: #ffe3d3; --wash-3: #fff3eb;
+  --mark: color-mix(in oklab, var(--ink) 55%, transparent);
+  --r-control: 10px; --r-frame: 18px;
+  --font-display: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 32px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+.num { font-variant-numeric: tabular-nums; }
+main { overflow-x: clip; }
+
+/* ---------- atmosphere: warm wash + faint blocks, behind the headline ---------- */
+.atmos { position: absolute; inset: 0 0 auto 0; height: 980px; z-index: 0; pointer-events: none; overflow: hidden;
+  background: linear-gradient(180deg, var(--wash-1) 0%, var(--wash-2) 24%, var(--wash-3) 48%, var(--canvas) 78%); }
+.atmos::before { content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, rgb(255 255 255 / .38) 1px, transparent 1px) 0 0 / 120px 120px,
+    linear-gradient(to bottom, rgb(255 255 255 / .38) 1px, transparent 1px) 0 0 / 120px 120px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 62%);
+          mask-image: linear-gradient(to bottom, transparent 6%, #000 22%, #000 34%, transparent 64%); }
+.atmos::after { content: ""; position: absolute; left: 50%; top: 120px; width: 760px; height: 520px; translate: -50% 0;
+  background: radial-gradient(closest-side, rgb(255 255 255 / .85), rgb(255 255 255 / 0)); }
+.lines { position: absolute; top: 140px; left: 50%; width: 1240px; height: 560px; translate: -50% 0; z-index: 0; pointer-events: none; }
+
+/* ---------- viewfinder corner marks (the signature) ---------- */
+.marks { position: relative; }
+.marks::before { content: ""; position: absolute; inset: -10px; pointer-events: none; --l: 10px; --t: 1.5px; --c: var(--mark);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l) no-repeat; }
+
+/* ---------- nav ---------- */
+.site-header { position: relative; z-index: 2; }
+.nav { max-width: 1200px; height: 80px; margin-inline: auto; padding-inline: var(--gutter);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 600 22px/1 var(--font-display); letter-spacing: -0.03em; }
+.logo svg { width: 22px; height: 22px; }
+.links { display: flex; gap: 36px; font: 400 15px/1 var(--font-ui); color: var(--ink-2); }
+.links a, .login { transition: color 150ms var(--ease); }
+.links a:hover, .login:hover { color: var(--ink); }
+.nav-right { justify-self: end; display: flex; align-items: center; gap: 24px; font: 500 15px/1 var(--font-ui); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding-inline: 20px;
+  border-radius: var(--r-control); font: 500 15px/1 var(--font-ui); border: 0; cursor: pointer;
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn-ink { background: var(--ink); color: #fff; }
+.btn-ink:hover { background: #2b2724; }
+:focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 3px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; z-index: 1; max-width: 1200px; margin-inline: auto; padding: 104px var(--gutter) 0;
+  display: flex; flex-direction: column; align-items: center; text-align: center; }
+.badge { display: inline-flex; align-items: center; gap: 10px; height: 32px; padding-inline: 12px;
+  font: 400 13px/1 var(--font-mono); color: var(--ink-2); background: rgb(255 255 255 / .55); backdrop-filter: blur(6px); }
+.badge b { font-weight: 500; color: var(--accent-deep); }
+.badge .sq { width: 18px; height: 18px; border-radius: 4px; background: var(--accent); display: grid; place-items: center; }
+.badge .sq svg { width: 12px; height: 12px; }
+h1 { margin-top: 28px; max-width: 20ch; font: 500 clamp(2.75rem, 6.2vw, 4.75rem)/1.02 var(--font-display); letter-spacing: -0.045em; }
+.lead { margin-top: 24px; max-width: 34rem; font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+
+.capture { margin-top: 40px; }
+.capture form { display: flex; width: min(480px, 100%); height: 52px; background: #fff; border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--hairline), 0 1px 2px rgb(20 18 16 / .05); }
+.capture label { flex: 1; display: flex; align-items: center; gap: 10px; padding-left: 16px; color: var(--ink-3); min-width: 0; }
+.capture label svg { width: 18px; height: 18px; flex: none; }
+.capture input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; font: 400 16px var(--font-ui); color: var(--ink); outline: none; }
+.capture input::placeholder { color: var(--ink-3); }
+.capture .btn { height: 44px; margin: 4px; border-radius: 9px; padding-inline: 20px; }
+.fine { margin-top: 20px; font-size: 14px; color: var(--ink-3); }
+.fine b { color: var(--ink); font-weight: 600; }
+
+.proof { margin-top: 32px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-2); }
+.faces { display: flex; }
+.faces span { width: 34px; height: 34px; border-radius: 50%; margin-left: -6px; border: 2px solid var(--canvas);
+  display: grid; place-items: center; font: 600 12px/1 var(--font-ui); letter-spacing: 0.02em; color: #fff; }
+.faces span:first-child { margin-left: 0; }
+.proof b { color: var(--ink); font-weight: 600; }
+
+/* ---------- product stage ---------- */
+.stage { position: relative; z-index: 1; margin-top: 80px; padding: 0 var(--gutter) 120px; }
+.stage::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 40px; width: 1400px; height: 640px; translate: -50% 0;
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--wash-1) 70%, transparent), transparent 70%); pointer-events: none; }
+.browser { width: min(1120px, 100%); margin-inline: auto; background: #fff; border-radius: var(--r-frame); overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -28px rgb(80 40 20 / .28), 0 2px 6px rgb(20 18 16 / .05); }
+.chrome { height: 44px; display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; padding-inline: 16px; border-bottom: 1px solid var(--hairline); background: #fbf9f7; }
+.dots { display: flex; gap: 8px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in oklab, var(--ink) 14%, transparent); }
+.url { justify-self: center; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding-inline: 12px; border-radius: 8px;
+  background: #fff; box-shadow: 0 0 0 1px var(--hairline); font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+.url b { color: var(--ink); font-weight: 500; }
+
+.dash { padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 24px; }
+.dash-top { display: flex; align-items: center; justify-content: space-between; }
+.site { display: flex; align-items: center; gap: 12px; font: 600 18px/1 var(--font-ui); letter-spacing: -0.01em; }
+.fav { width: 28px; height: 28px; border-radius: 8px; background: #1f2937; color: #fff; display: grid; place-items: center; font: 600 14px/1 var(--font-display); }
+.live { display: inline-flex; align-items: center; gap: 6px; font: 400 13px/1 var(--font-ui); color: var(--ink-3); margin-left: 4px; }
+.live i { width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
+.range { height: 36px; padding-inline: 14px; border-radius: 9px; box-shadow: 0 0 0 1px var(--hairline); display: inline-flex; align-items: center; gap: 8px; font: 500 14px/1 var(--font-ui); }
+.range svg { width: 14px; height: 14px; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); border-radius: 14px; box-shadow: 0 0 0 1px var(--hairline); overflow: hidden; }
+.kpi { padding: 18px 20px; border-left: 1px solid var(--hairline); }
+.kpi:first-child { border-left: 0; }
+.kpi .k { display: flex; align-items: center; gap: 8px; font: 500 13px/1 var(--font-ui); color: var(--ink-3); }
+.kpi .k i { width: 8px; height: 8px; border-radius: 2px; }
+.kpi .v { margin-top: 12px; font: 600 30px/1 var(--font-ui); letter-spacing: -0.025em; }
+.kpi .d { margin-top: 10px; font: 500 13px/1 var(--font-ui); color: #15803d; }
+.kpi.money { background: #fff7f2; }
+.kpi.money .v { color: var(--accent-deep); }
+
+.split { display: grid; grid-template-columns: 1.7fr 1fr; gap: 24px; }
+.card { border-radius: 14px; box-shadow: 0 0 0 1px var(--hairline); padding: 20px; }
+.card h4 { margin: 0; display: flex; justify-content: space-between; align-items: baseline; font: 600 15px/1.2 var(--font-ui); }
+.card h4 small { font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+.legend { display: flex; gap: 16px; font: 400 13px/1 var(--font-ui); color: var(--ink-3); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; }
+.chart { display: block; width: 100%; height: 248px; margin-top: 16px; }
+.ax { font: 400 12px var(--font-mono); fill: var(--ink-3); }
+
+.src { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.src li { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; height: 40px; padding-inline: 12px; font: 500 14px/1 var(--font-ui); }
+.src li::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 8px; background: color-mix(in oklab, var(--accent) 14%, transparent); z-index: 0; }
+.src li > * { position: relative; }
+.src li .who { display: flex; align-items: center; gap: 10px; }
+.src li .ic { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; font: 600 12px/1 var(--font-ui); color: #fff; }
+.src li .r { font: 500 14px/1 var(--font-ui); }
+.src li.top::before { background: color-mix(in oklab, var(--accent) 30%, transparent); }
+
+/* ---------- entrance ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; } .hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; } .hero > :nth-child(5) { animation-delay: 280ms; } .hero > :nth-child(6) { animation-delay: 350ms; }
+.stage { animation: rise 800ms 420ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- mobile ---------- */
+@media (max-width: 809px) {
+  .links, .login { display: none; }
+  .nav { grid-template-columns: 1fr auto; height: 64px; }
+  .hero { padding-top: 56px; }
+  .lead { font-size: 17px; }
+  .capture { width: 100%; }
+  .capture form { height: auto; flex-direction: column; padding: 4px; gap: 4px; }
+  .capture label { height: 48px; }
+  .capture .btn { margin: 0; width: 100%; height: 48px; }
+  .proof { flex-direction: column; gap: 8px; }
+  .lines { display: none; }
+  .stage { margin-top: 56px; padding-bottom: 64px; }
+  .dash { padding: 20px 16px; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi:nth-child(3) { border-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+  .split { grid-template-columns: 1fr; }
+  .chrome { grid-template-columns: 1fr; } .dots { display: none; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: var(--canvas); font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="atmos" aria-hidden="true"></div>
+  <svg class="lines" viewBox="0 0 1240 560" fill="none" aria-hidden="true">
+    <g stroke="#f0623a" stroke-opacity=".45" stroke-width="1">
+      <path d="M40 0 C 40 220, 300 300, 380 420"/><path d="M70 0 C 70 230, 320 300, 392 430"/><path d="M100 0 C 100 240, 340 300, 404 440"/>
+      <path d="M1200 0 C 1200 220, 940 300, 860 420"/><path d="M1170 0 C 1170 230, 920 300, 848 430"/><path d="M1140 0 C 1140 240, 900 300, 836 440"/>
+    </g>
+  </svg>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4.5" height="9" rx="1.5" fill="#f6a184"/><rect x="9.75" y="7" width="4.5" height="14" rx="1.5" fill="#f0623a"/><rect x="16.5" y="3" width="4.5" height="18" rx="1.5" fill="#c2410c"/></svg>openlytics</a>
+      <div class="links"><a href="#">Product</a><a href="#">Revenue</a><a href="#">Privacy</a><a href="#">Pricing</a><a href="#">Docs</a></div>
+      <div class="nav-right"><a class="login" href="#">Log in</a><a class="btn btn-ink" href="#">Start free</a></div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <a class="badge marks" href="#"><span class="sq"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Now reads <b>Cardstream</b> &amp; <b>Lemonpay</b></a>
+    <h1>Analytics that counts customers, not clicks.</h1>
+    <p class="lead">Add one script tag. Openlytics follows every visit to the signup and the payment, so you see which post, newsletter or launch actually earns you money.</p>
+    <div class="capture marks">
+      <form onsubmit="return false">
+        <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><input aria-label="Your website" placeholder="yourwebsite.com"></label>
+        <button class="btn btn-ink" type="submit">Add my website</button>
+      </form>
+    </div>
+    <p class="fine">Free for 14 days, then <b>$9/month</b>. No card required.</p>
+    <div class="proof">
+      <div class="faces"><span style="background:#e2725b">MK</span><span style="background:#6b8f71">JS</span><span style="background:#5b6cc2">AR</span><span style="background:#c08a3e">LT</span><span style="background:#8a5a9e">DN</span></div>
+      <span><b>3,400 makers</b> know which channel pays their rent</span>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Product preview">
+    <div class="browser">
+      <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">openlytics.com/<b>makerlog.app</b></div><div></div></div>
+      <div class="dash">
+        <div class="dash-top">
+          <div class="site"><span class="fav">M</span>makerlog.app<span class="live"><i></i>14 online</span></div>
+          <div class="range">Last 30 days<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k"><i style="background:#d6d0ca"></i>Visitors</div><div class="v num">18,240</div><div class="d">+22% vs last month</div></div>
+          <div class="kpi"><div class="k">Signups</div><div class="v num">612</div><div class="d">+9% vs last month</div></div>
+          <div class="kpi"><div class="k">Customers</div><div class="v num">48</div><div class="d">+14 vs last month</div></div>
+          <div class="kpi money"><div class="k"><i style="background:var(--accent)"></i>Revenue</div><div class="v num">$5,712</div><div class="d">+31% vs last month</div></div>
+        </div>
+        <div class="split">
+          <div class="card">
+            <h4>Visitors and revenue <span class="legend"><span><i style="background:#e4ded8"></i>Visitors</span><span><i style="background:var(--accent)"></i>Revenue</span></span></h4>
+            <svg class="chart" id="chart" viewBox="0 0 620 250" preserveAspectRatio="none" role="img" aria-label="Daily visitors and revenue over 30 days"></svg>
+          </div>
+          <div class="card">
+            <h4>Revenue by source <small>30 days</small></h4>
+            <ul class="src">
+              <li class="top" style="--w:100%"><span class="who"><span class="ic" style="background:#c2410c">NL</span>Founder newsletter</span><span class="r num">$2,142</span></li>
+              <li style="--w:58%"><span class="who"><span class="ic" style="background:#111">S</span>Social posts</span><span class="r num">$1,247</span></li>
+              <li style="--w:41%"><span class="who"><span class="ic" style="background:#1d4ed8">Q</span>Search</span><span class="r num">$881</span></li>
+              <li style="--w:33%"><span class="who"><span class="ic" style="background:#9a3412">F</span>Forum thread</span><span class="r num">$714</span></li>
+              <li style="--w:24%"><span class="who"><span class="ic" style="background:#57534e">↗</span>Direct</span><span class="r num">$528</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+(() => {
+  const v = [420,460,510,480,530,610,580,560,620,690,640,700,1480,920,760,720,690,740,780,760,820,870,830,900,950,910,980,1020,990,1060];
+  const r = [60,90,0,120,90,180,60,90,150,210,120,180,240,300,150,120,210,180,240,150,270,330,180,300,360,240,330,390,300,420];
+  const W = 620, H = 250, L = 34, R = 8, T = 10, B = 24, n = v.length;
+  const x = i => L + i * (W - L - R) / (n - 1), yv = a => T + (1 - a / 1600) * (H - T - B), yr = a => T + (1 - a / 1000) * (H - T - B);
+  const pts = v.map((a, i) => [x(i), yv(a)]);
+  let d = `M${pts[0]}`;
+  for (let i = 0; i < n - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2, t = .2;
+    d += ` C${p1[0] + (p2[0] - p0[0]) * t},${p1[1] + (p2[1] - p0[1]) * t} ${p2[0] - (p3[0] - p1[0]) * t},${p2[1] - (p3[1] - p1[1]) * t} ${p2[0]},${p2[1]}`; }
+  const grid = [0, 400, 800, 1200, 1600].map(a => `<line x1="${L}" x2="${W - R}" y1="${yv(a)}" y2="${yv(a)}" stroke="rgb(20 18 16 / .07)"/><text class="ax" x="0" y="${yv(a) + 4}">${a ? a / 1000 + "k" : 0}</text>`).join("");
+  const bw = (W - L - R) / n * .46;
+  const bars = r.map((a, i) => a ? `<rect x="${x(i) - bw / 2}" y="${yr(a)}" width="${bw}" height="${H - B - yr(a)}" rx="2" fill="#f0623a"/>` : "").join("");
+  const xl = [0, 7, 14, 21, 29].map(i => `<text class="ax" x="${x(i)}" y="${H - 4}" text-anchor="${i ? i === 29 ? "end" : "middle" : "start"}">Oct ${i + 1}</text>`).join("");
+  document.getElementById("chart").innerHTML = `<defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d9d1ca" stop-opacity=".7"/><stop offset="1" stop-color="#d9d1ca" stop-opacity="0"/></linearGradient></defs>
+    ${grid}<path d="${d} L${x(n - 1)},${H - B} L${x(0)},${H - B} Z" fill="url(#g)"/><path d="${d}" fill="none" stroke="#bfb4aa" stroke-width="2" vector-effect="non-scaling-stroke"/>${bars}${xl}`;
+})();
+</script>
+</body>
+</html>

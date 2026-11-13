@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07080c">
+<title>Knotwork — ship the workflow, skip the glue code</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --night: #07080c;
+  --night-2: #101218;
+  --panel: #12141b;
+  --panel-2: #191c25;
+  --line: rgb(255 255 255 / .1);
+  --line-2: rgb(255 255 255 / .16);
+  --ink: rgb(244 244 246);
+  --ink-2: #c4c7cf;
+  --ink-3: #969aa5;
+  --crimson: #d4151b;
+  --ember: #f26a1b;
+  --ok: #4fbf7f;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 40px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--night); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ol { margin: 0; padding: 0; }
+ol { list-style: none; }
+h1, h2 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+::selection { background: rgb(212 21 27 / .5); color: #fff; }
+:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 10px; }
+main { overflow-x: clip; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: #fff; color: #0b0c10; font-size: 14px; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- the painted scene ---------- */
+.stage { position: relative; isolation: isolate; min-height: max(100svh, 760px); display: flex; flex-direction: column; }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; background: var(--night); }
+
+/* ---------- nav: links left, mark centered, account right ---------- */
+.nav { position: relative; height: 88px; padding-inline: var(--gutter); display: flex; align-items: center; gap: 32px; border-bottom: 1px solid var(--line); }
+.links { display: flex; gap: 32px; font-size: 18px; font-weight: 500; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); transition: color 150ms var(--ease); }
+.links a:hover { color: #fff; }
+.logo { position: absolute; left: 50%; translate: -50% 0; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 27px; font-weight: 500; letter-spacing: -0.03em; }
+.logo svg { width: 26px; height: 26px; }
+.end { margin-left: auto; display: flex; align-items: center; gap: 24px; font-size: 18px; font-weight: 500; }
+.end > a:first-child { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 52px; padding-inline: 22px; border-radius: 10px; font-size: 18px; font-weight: 500; transition: background 150ms var(--ease), transform 150ms var(--ease), border-color 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.light { background: #fff; color: #0b0c10; }
+.btn.light:hover { background: #e4e5e9; }
+.btn.dark { background: rgb(22 24 31 / .86); border: 1px solid var(--line-2); color: var(--ink); }
+.btn.dark:hover { border-color: rgb(255 255 255 / .32); }
+.end .btn { height: 44px; font-size: 17px; }
+
+/* ---------- hero ---------- */
+.hero { padding: 96px var(--gutter) 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.badge { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding-inline: 14px; border-radius: 10px; background: rgb(18 20 27 / .85); border: 1px solid var(--line-2); font-size: 16px; color: var(--ink-2); }
+.badge i { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; background: var(--ember); color: #1b0b02; font: 600 12px/1 var(--font-mono); font-style: normal; }
+.badge b { font-weight: 500; color: var(--ink); }
+.hero h1 { margin-top: 36px; font-size: 88px; font-weight: 600; line-height: 1.02; letter-spacing: -0.04em; max-width: 15ch; }
+.lead { margin-top: 26px; max-width: 46ch; font-size: 20px; line-height: 1.55; color: var(--ink-2); }
+.ctas { margin-top: 40px; display: flex; gap: 20px; }
+
+/* ---------- run log section ---------- */
+.runs { padding: 120px var(--gutter) 128px; max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.25fr; gap: 64px; align-items: center; }
+.kicker { font: 400 13px/1 var(--font-mono); color: var(--ink-3); letter-spacing: .02em; }
+.runs h2 { margin-top: 16px; font-size: 48px; font-weight: 600; line-height: 1.05; letter-spacing: -0.035em; }
+.runs h2 span { color: var(--ink-3); }
+.runs .copy p { margin-top: 20px; font-size: 18px; color: var(--ink-2); max-width: 40ch; }
+.points { margin-top: 28px; display: grid; gap: 12px; font-size: 16px; color: var(--ink-2); }
+.points li { display: flex; gap: 12px; }
+.points li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 8px; border-radius: 1px; background: var(--crimson); }
+.log { border-radius: 16px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+.log-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.log-head b { font-weight: 500; }
+.log-head .id { font: 400 13px/1 var(--font-mono); color: var(--ink-3); }
+.log-head button { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding-inline: 14px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 14px; font-weight: 500; transition: border-color 150ms var(--ease); }
+.log-head button:hover { border-color: rgb(255 255 255 / .32); }
+.log-head svg { width: 14px; height: 14px; }
+.steps { padding: 8px 0; }
+.steps li { display: grid; grid-template-columns: 22px 1fr auto; gap: 14px; align-items: start; padding: 12px 20px; }
+.steps li + li { border-top: 1px solid rgb(255 255 255 / .05); }
+.dot { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--line); }
+.dot svg { width: 12px; height: 12px; }
+.ok .dot { color: var(--ok); }
+.wait .dot { color: var(--ember); border-color: rgb(242 106 27 / .5); }
+.steps b { display: block; font-size: 15px; font-weight: 500; }
+.steps code { display: block; margin-top: 4px; font: 400 13px/1.5 var(--font-mono); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps .t { font: 400 13px/22px var(--font-mono); color: var(--ink-3); }
+.approve { margin-top: 10px; display: flex; gap: 8px; }
+.approve button { min-height: 36px; padding-inline: 14px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: background 150ms var(--ease); }
+.approve .yes { background: #fff; color: #0b0c10; }
+.approve .yes:hover { background: #e4e5e9; }
+.approve .no { border: 1px solid var(--line-2); }
+.log-foot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; font: 400 13px/1.4 var(--font-mono); color: var(--ink-3); }
+.foot { padding: 28px var(--gutter) 36px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; font-size: 14px; color: var(--ink-3); }
+
+/* motion */
+@keyframes rise { from { opacity: 0; translate: 0 14px; } }
+.hero > * { animation: rise 640ms var(--ease) both; }
+.hero > :nth-child(2) { animation-delay: 70ms; }
+.hero > :nth-child(3) { animation-delay: 140ms; }
+.hero > :nth-child(4) { animation-delay: 210ms; }
+@keyframes fade { from { opacity: 0; } }
+#scene { animation: fade 900ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 900px) {
+  .links { display: none; }
+  .logo { position: static; translate: none; }
+  .runs { grid-template-columns: 1fr; gap: 44px; padding-top: 88px; }
+}
+@media (max-width: 560px) {
+  .stage { min-height: max(100svh, 900px); }
+  .nav { height: 68px; }
+  .logo { font-size: 22px; }
+  .logo svg { width: 22px; height: 22px; }
+  .end { gap: 16px; font-size: 16px; }
+  .end .btn { height: 44px; font-size: 16px; padding-inline: 16px; }
+  .hero { padding-top: 64px; }
+  .badge { font-size: 14px; }
+  .hero h1 { margin-top: 28px; font-size: 44px; line-height: 1.04; }
+  .lead { font-size: 17px; }
+  .ctas { width: 100%; flex-direction: column; gap: 12px; }
+  .ctas .btn { width: 100%; }
+  .runs h2 { font-size: 36px; }
+  .steps code { white-space: normal; }
+  .log-head button, .approve button { min-height: 44px; }
+  .log-foot { flex-direction: column; }
+  .foot { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="stage">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <header class="nav">
+      <nav class="links" aria-label="Main"><a href="#runs">Integrations</a><a href="#">Pricing</a><a href="#">Docs</a></nav>
+      <a class="logo" href="#" aria-label="Knotwork home">
+        <svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 2v22M2 13h22M5.2 5.2l15.6 15.6M20.8 5.2 5.2 20.8"/><circle cx="13" cy="13" r="3.2" fill="#07080c"/></svg>
+        Knotwork
+      </a>
+      <div class="end"><a href="#">Log in</a><a class="btn light" href="#">Sign up</a></div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="badge"><span>Seed round led by</span><i aria-hidden="true">H</i><b>Halden Ventures</b></p>
+      <h1 id="hero-title">Ship the workflow, skip the glue code</h1>
+      <p class="lead">Wire your apps together, drop in model steps, and route anything risky to a person. Each run is typed, logged and can be replayed.</p>
+      <div class="ctas"><a class="btn light" href="#">Start building</a><a class="btn dark" href="#runs">How it works</a></div>
+    </section>
+  </div>
+
+  <section class="runs" id="runs" aria-labelledby="runs-title">
+    <div class="copy">
+      <p class="kicker">RUN LOG</p>
+      <h2 id="runs-title">Every run, on the record. <span>Replay any of them.</span></h2>
+      <p>Each step's input and output is typed and kept for 30 days. When a step fails, fix it and replay from that step, not from the start.</p>
+      <ol class="points"><li>Schemas checked between every step</li><li>Model steps pinned to a version</li><li>Approvals in chat or by email</li></ol>
+    </div>
+    <div class="log" aria-label="Example run log">
+      <div class="log-head"><b>invoice-triage</b><span class="id num">run 4,182 · 14:02</span>
+        <button type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7a4.5 4.5 0 1 0 1.4-3.3M2.5 1.8v2.6h2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay</button>
+      </div>
+      <ol class="steps">
+        <li class="ok"><span class="dot"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Mailbox · new message</b><code>{ from: "ap@harborpine.co", files: 1 }</code></div><span class="t num">0.2 s</span></li>
+        <li class="ok"><span class="dot"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Extract invoice</b><code>{ total: 4280.00, currency: "EUR", due: "2026-12-01" }</code></div><span class="t num">2.8 s</span></li>
+        <li class="ok"><span class="dot"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Match purchase order</b><code>{ po: "PO-2291", match: 0.97 }</code></div><span class="t num">0.4 s</span></li>
+        <li class="wait"><span class="dot"><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="2.4" fill="currentColor"/></svg></span><div><b>Approval · over €4,000</b><code>waiting on finance, 6 min</code>
+          <div class="approve"><button type="button" class="yes">Approve</button><button type="button" class="no">Reject</button></div></div><span class="t num">—</span></li>
+      </ol>
+      <div class="log-foot"><span>3 of 4 steps · typed</span><span>kept until 13 Dec</span></div>
+    </div>
+  </section>
+</main>
+<footer class="foot"><span>© 2026 Knotwork. Brand, names and numbers are placeholders.</span><span>Status, security and terms</span></footer>
+
+<script>
+// The scene is painted once per size: night sky, two mesas lit cold from the left, a crimson plain, a rock slab and a cloaked figure.
+(() => {
+  const cv = document.getElementById("scene"), cx = cv.getContext("2d");
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const R = (a, b) => a + rnd() * (b - a);
+  const pick = (a) => a[Math.floor(rnd() * a.length)];
+  const poly = (pts) => { cx.beginPath(); pts.forEach(([a, b], i) => i ? cx.lineTo(a, b) : cx.moveTo(a, b)); cx.closePath(); };
+
+  function paint() {
+    seed = 7;
+    const scale = Math.min(devicePixelRatio || 1, 1.5) * 0.85;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = Math.round(W * scale); cv.height = Math.round(H * scale);
+    cx.setTransform(scale, 0, 0, scale, 0, 0);
+    const narrow = W < 700;
+    const hz = H * (narrow ? 0.83 : 0.73);          // horizon
+    const G = H - hz;
+
+    // sky and dim haze
+    let g = cx.createLinearGradient(0, 0, 0, hz);
+    g.addColorStop(0, "#040509"); g.addColorStop(.75, "#080a10"); g.addColorStop(1, "#141621");
+    cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 60; i++) {
+      const x = R(0, W), y = R(hz * .1, hz), r = R(60, 220);
+      const rg = cx.createRadialGradient(x, y, 0, x, y, r);
+      const c = y > hz * .75 ? (rnd() < .45 ? "46,16,20" : "30,36,54") : "20,26,42";
+      rg.addColorStop(0, `rgba(${c},${R(.1, .26)})`); rg.addColorStop(1, `rgba(${c},0)`);
+      cx.fillStyle = rg; cx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    for (let i = 0; i < (W * H) / 6000; i++) { cx.fillStyle = `rgba(228,232,242,${R(.12, .6)})`; const s = R(.5, 1.3); cx.fillRect(R(0, W), R(0, hz * .92), s, s); }
+
+    // ground: a continuous crimson plain, darker and bluer at the horizon
+    g = cx.createLinearGradient(0, hz, 0, H);
+    g.addColorStop(0, "#241a22"); g.addColorStop(.1, "#4d1016"); g.addColorStop(.35, "#9c1219"); g.addColorStop(.7, "#b5141b"); g.addColorStop(1, "#7a0d12");
+    cx.fillStyle = g; cx.fillRect(0, hz, W, G);
+    // distant blue haze band where the plain meets the sky
+    g = cx.createLinearGradient(0, hz - 4, 0, hz + G * .14);
+    g.addColorStop(0, "rgba(64,78,108,.75)"); g.addColorStop(1, "rgba(64,78,108,0)");
+    cx.fillStyle = g; cx.fillRect(0, hz - 4, W, G * .14 + 4);
+
+    const yAt = (t) => hz + G * Math.pow(t, 1.8);
+    // texture streaks: thin and flat in perspective
+    for (let i = 0; i < 9000; i++) {
+      const t = rnd(), y = yAt(t), s = .2 + t * 1.3, x = R(-20, W + 20);
+      const edge = Math.min(1, Math.abs(x - W / 2) / (W * .5));
+      const frost = rnd() < (.06 + edge * edge * .55) * (1.1 - t * .8);
+      cx.fillStyle = frost ? pick(["#62759a", "#7d90b2", "#9aabc6", "#4b5a78"]) : pick(["#c8171e", "#a8121a", "#e0242a", "#8c0f15", "#b9151c"]);
+      cx.globalAlpha = frost ? R(.35, .8) : R(.25, .7);
+      cx.fillRect(x, y, R(6, 34) * s, R(.6, 1.8) * s);
+    }
+    cx.globalAlpha = 1;
+    // stones: small, flat, irregular, lit cold on top
+    for (let i = 0; i < 150; i++) {
+      const t = Math.pow(rnd(), .7), y = yAt(t), s = .3 + t * 1.8, x = R(0, W), r = R(1.5, 5) * s;
+      if (Math.abs(x - W / 2) < W * .2 && t > .55) continue;
+      cx.fillStyle = "#211a1b";
+      poly([[x - r * 1.4, y], [x - r * .6, y - r * .7], [x + r * .5, y - r * .8], [x + r * 1.5, y - r * .1], [x + r, y + r * .3], [x - r, y + r * .3]]); cx.fill();
+      cx.fillStyle = "rgba(140,152,178,.5)"; cx.fillRect(x - r * .6, y - r * .75, r * 1.1, Math.max(.6, r * .18));
+    }
+
+    // a mesa: flat crown, striated cliffs lit from the left, a dark right flank, a talus apron
+    function mesa(x0, x1, top, base, sp = 1) {
+      const w = x1 - x0, h = base - top, tw = w * sp;
+      // talus fading into the plain
+      g = cx.createLinearGradient(0, base - h * .25, 0, base + G * .14);
+      g.addColorStop(0, "#3e4a66"); g.addColorStop(.6, "#3a3346"); g.addColorStop(1, "rgba(80,20,28,0)");
+      cx.fillStyle = g;
+      cx.beginPath(); cx.moveTo(x0 - tw * .5, base + G * .14); cx.bezierCurveTo(x0 - tw * .2, base + G * .02, x0 - w * .05, base - h * .1, x0 + w * .04, base - h * .26);
+      cx.lineTo(x1 - w * .06, base - h * .26); cx.bezierCurveTo(x1 + w * .04, base - h * .08, x1 + tw * .2, base + G * .03, x1 + tw * .55, base + G * .15); cx.closePath(); cx.fill();
+      for (let i = 0; i < w * 3; i++) {
+        const ty = R(base - h * .24, base + G * .12), spread = (ty - (base - h * .26)) / (h * .26 + G * .12);
+        const tx = R(x0 - tw * .45 * spread, x1 + tw * .5 * spread);
+        cx.fillStyle = pick(["#6d81a5", "#93a6c4", "#4a5878", "#b8c6dc", "#a3141b"]); cx.globalAlpha = R(.25, .7);
+        cx.fillRect(tx, ty, R(3, 12), R(.8, 2));
+      }
+      cx.globalAlpha = 1;
+      const pts = [[x0 + w * .03, base - h * .25], [x0, top + h * .22], [x0 + w * .03, top + h * .16], [x0 + w * .22, top + h * .15], [x0 + w * .26, top + h * .05], [x0 + w * .5, top + h * .03], [x0 + w * .56, top], [x1 - w * .05, top + h * .01], [x1, top + h * .07], [x1 + w * .02, base - h * .25]];
+      cx.save(); poly(pts); cx.clip();
+      g = cx.createLinearGradient(x0, 0, x1, 0);
+      g.addColorStop(0, "#7590b8"); g.addColorStop(.45, "#56709a"); g.addColorStop(.7, "#3a4866"); g.addColorStop(.82, "#3e2f2b"); g.addColorStop(1, "#2a201e");
+      cx.fillStyle = g; cx.fillRect(x0 - 4, top - 4, w + 8, h + 8);
+      // vertical fluting: short, soft, mostly darker than the face
+      for (let i = 0; i < w * 1.3; i++) {
+        const x = R(x0, x1 + 4), y = R(top, base), hh = R(h * .08, h * .35);
+        cx.fillStyle = rnd() < .62 ? "rgba(18,24,40,.42)" : "rgba(196,212,236,.28)";
+        cx.fillRect(x, y, R(1, 2.6), hh);
+      }
+      // ledges
+      for (let k = 0; k < 6; k++) {
+        const y = top + h * (.12 + k * .13) + R(-4, 4);
+        cx.fillStyle = "rgba(16,20,34,.32)"; cx.fillRect(x0 + R(0, w * .2), y, w * R(.4, .8), R(1.2, 2.4));
+        cx.fillStyle = "rgba(200,214,236,.16)"; cx.fillRect(x0, y - 1.5, w * R(.3, .7), 1);
+      }
+      // shadow at the foot
+      g = cx.createLinearGradient(0, base - h * .45, 0, base - h * .2);
+      g.addColorStop(0, "rgba(10,12,22,0)"); g.addColorStop(1, "rgba(10,12,22,.55)");
+      cx.fillStyle = g; cx.fillRect(x0 - 4, base - h * .45, w + 8, h * .3);
+      cx.restore();
+      cx.strokeStyle = "rgba(200,214,236,.6)"; cx.lineWidth = 1.1; cx.beginPath(); pts.slice(1, -1).forEach(([a, b], i) => i ? cx.lineTo(a, b) : cx.moveTo(a, b)); cx.stroke();
+    }
+    if (narrow) { mesa(-W * .22, W * .16, H * .7, hz + 6, .35); mesa(W * .8, W * 1.24, H * .66, hz + 4, .35); }
+    else { mesa(W * .055, W * .2, H * .5, hz + 14); mesa(W * .79, W * 1.04, H * .37, hz + 8); }
+
+    // the slab in front: layered facets with lit edges and cracks
+    const sy = H * (narrow ? .93 : .875), m = W / 2, F = H - sy;
+    const slab = (pts, fill) => { cx.fillStyle = fill; poly(pts); cx.fill(); };
+    slab([[m - W * .34, H], [m - W * .3, sy + F * .55], [m - W * .18, sy + F * .32], [m - W * .1, sy + F * .05], [m + W * .11, sy], [m + W * .19, sy + F * .3], [m + W * .31, sy + F * .48], [m + W * .36, H]], "#2f2a28");
+    slab([[m - W * .26, H], [m - W * .22, sy + F * .5], [m - W * .08, sy + F * .12], [m + W * .09, sy + F * .06], [m + W * .17, sy + F * .4], [m + W * .28, H]], "#423b36");
+    slab([[m - W * .12, sy + F * .55], [m - W * .07, sy + F * .1], [m + W * .07, sy + F * .07], [m + W * .12, sy + F * .5]], "#544b44");
+    for (let i = 0; i < 700; i++) {
+      const y = R(sy + F * .05, H), sp = W * (.08 + (y - sy) / F * .2), x = m + R(-sp, sp);
+      cx.fillStyle = pick(["#6c635a", "#7f766c", "#2a2422", "#4b443e", "#91877b"]); cx.globalAlpha = R(.3, .75);
+      cx.fillRect(x, y, R(5, 22), R(.8, 2.2));
+    }
+    cx.globalAlpha = 1; cx.strokeStyle = "rgba(20,16,15,.7)"; cx.lineWidth = 1.2;
+    for (let i = 0; i < 14; i++) { let x = m + R(-W * .22, W * .22), y = R(sy + F * .15, H); cx.beginPath(); cx.moveTo(x, y); for (let k = 0; k < 4; k++) { x += R(-30, 30); y += R(4, 16); cx.lineTo(x, y); } cx.stroke(); }
+    cx.strokeStyle = "rgba(170,160,148,.5)"; cx.lineWidth = 1;
+    cx.beginPath(); cx.moveTo(m - W * .1, sy + F * .05); cx.lineTo(m + W * .11, sy); cx.stroke();
+
+    // cloaked figure, rim-lit on the left
+    const fh = H * (narrow ? .1 : .15), fx = m, fy = sy + F * .06;
+    cx.fillStyle = "#18203a";
+    cx.beginPath(); cx.moveTo(fx - fh * .3, fy); cx.bezierCurveTo(fx - fh * .24, fy - fh * .3, fx - fh * .2, fy - fh * .55, fx - fh * .17, fy - fh * .72);
+    cx.bezierCurveTo(fx - fh * .2, fy - fh * .86, fx - fh * .14, fy - fh * 1.0, fx - fh * .02, fy - fh * 1.02);
+    cx.bezierCurveTo(fx + fh * .1, fy - fh * 1.02, fx + fh * .16, fy - fh * .9, fx + fh * .15, fy - fh * .74);
+    cx.bezierCurveTo(fx + fh * .2, fy - fh * .55, fx + fh * .26, fy - fh * .3, fx + fh * .33, fy); cx.closePath(); cx.fill();
+    cx.strokeStyle = "rgba(122,144,188,.75)"; cx.lineWidth = 1.4;
+    cx.beginPath(); cx.moveTo(fx - fh * .03, fy - fh * 1.01); cx.bezierCurveTo(fx - fh * .16, fy - fh * .96, fx - fh * .2, fy - fh * .8, fx - fh * .17, fy - fh * .72);
+    cx.bezierCurveTo(fx - fh * .2, fy - fh * .5, fx - fh * .25, fy - fh * .25, fx - fh * .3, fy - 1); cx.stroke();
+    cx.strokeStyle = "rgba(8,10,20,.6)"; cx.lineWidth = 1;
+    for (const d of [-.05, .06, .15]) { cx.beginPath(); cx.moveTo(fx + fh * d, fy - fh * .62); cx.quadraticCurveTo(fx + fh * (d * 1.4), fy - fh * .3, fx + fh * d * 1.8, fy - 1); cx.stroke(); }
+    cx.fillStyle = "rgba(0,0,0,.45)"; cx.beginPath(); cx.ellipse(fx + fh * .15, fy + 2, fh * .38, fh * .05, 0, 0, Math.PI * 2); cx.fill();
+  }
+  let t; const ro = new ResizeObserver(() => { clearTimeout(t); t = setTimeout(paint, 60); });
+  ro.observe(cv); paint();
+})();
+</script>
+</body>
+</html>

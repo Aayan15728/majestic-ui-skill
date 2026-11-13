@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Overlook — exceptionally good websites for startups and enterprises</title>
+<style>
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(../fonts/geist-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  --canvas: #ffffff;
+  --ink: #2b2d31;
+  --ink-2: color-mix(in oklab, var(--ink) 74%, white);
+  --ink-3: color-mix(in oklab, var(--ink) 50%, white);
+  --hairline: rgb(43 45 49 / .1);
+  --dash: rgb(43 45 49 / .22);
+  --accent: #2f6bff;
+  --accent-deep: #1f55e6;
+  --tile: #f3f4f6;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+  --frame: 1032px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, p { margin: 0; }
+h1 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--accent); color: #fff; }
+main { overflow-x: clip; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+/* ---------- the frame: dotted rails that hold the page ---------- */
+.frame { position: relative; max-width: var(--frame); margin-inline: auto; }
+.frame::before, .frame::after { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, var(--dash) 0 2px, transparent 2px 6px); }
+.frame::before { left: 0; } .frame::after { right: 0; }
+.rule { height: 1px; background: repeating-linear-gradient(to right, var(--dash) 0 2px, transparent 2px 6px); }
+
+/* ---------- atmosphere: a snowfield painted once to canvas, fading into the page ---------- */
+.hero { position: relative; isolation: isolate; padding: 16px var(--gutter) 64px; }
+#peaks { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 340px; z-index: -1; }
+
+/* ---------- floating nav card ---------- */
+.nav { width: min(692px, 100%); margin-inline: auto; height: 52px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; border-radius: 12px; background: rgb(255 255 255 / .96);
+  box-shadow: 0 0 0 1px var(--hairline), 0 8px 24px -12px rgb(30 45 70 / .25); }
+.nav > * { height: 100%; display: flex; align-items: center; }
+.logo { gap: 6px; padding-inline: 20px; font: 600 17px/1 var(--font-ui); letter-spacing: -0.03em; border-right: 1px dashed var(--dash); }
+.logo svg { width: 16px; height: 16px; }
+.links { justify-content: center; gap: 14px; font-size: 14px; font-weight: 500; }
+.links i { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+.links a { transition: color 150ms var(--ease); }
+.links a:hover { color: var(--accent); }
+.nav-cta { padding: 0 6px 0 8px; border-left: 1px dashed var(--dash); }
+
+/* signature: a glossy blue button with an inner rim, used three times */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding-inline: 14px; border-radius: 8px; font-weight: 500; font-size: 15px;
+  transition: filter 150ms var(--ease), transform 150ms var(--ease), background-color 150ms var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn.blue { color: #fff; background: linear-gradient(var(--accent), var(--accent-deep));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .12), 0 0 0 1px var(--accent-deep), 0 4px 10px -4px rgb(47 107 255 / .7); }
+.btn.blue:hover { filter: brightness(1.06); }
+.btn.white { background: #fff; box-shadow: 0 0 0 1px var(--hairline), 0 2px 4px -2px rgb(30 45 70 / .15); }
+.btn.white:hover { background: #f8f9fb; }
+
+/* ---------- copy ---------- */
+.copy { margin-top: 72px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+h1 { font: 600 clamp(2.25rem, 3.4vw, 2.25rem)/1.28 var(--font-ui); font-size: clamp(2.25rem, 3.4vw, 2.5rem); letter-spacing: -0.035em; max-width: 26ch; }
+h1 mark { background: var(--accent); color: #fff; padding: 0 6px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.lead { margin-top: 24px; max-width: 54ch; font-size: 16px; color: var(--ink-2); }
+.ctas { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.btn.lg { height: 40px; padding-inline: 14px; font-size: 15px; }
+.av { width: 24px; height: 24px; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1.5px rgb(255 255 255 / .8); }
+.av svg { display: block; width: 100%; height: 100%; }
+
+/* ---------- clients ---------- */
+.clients { margin-top: 64px; display: flex; flex-direction: column; align-items: center; }
+.clients p { font-size: 13px; font-weight: 500; text-align: center; line-height: 1.4; }
+.clist { margin-top: 20px; display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+.c { display: flex; align-items: center; gap: 8px; text-align: left; }
+.c i { width: 28px; height: 28px; border-radius: 6px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--hairline); display: grid; place-items: center; }
+.c i svg { width: 14px; height: 14px; color: #55585f; }
+.c b { display: block; font-size: 13px; font-weight: 500; line-height: 1.2; }
+.c small { display: block; font-size: 12px; color: var(--ink-3); line-height: 1.3; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.copy > * { animation: rise 640ms var(--ease) both; }
+.copy > :nth-child(2) { animation-delay: 70ms; } .copy > :nth-child(3) { animation-delay: 140ms; } .copy > :nth-child(4) { animation-delay: 240ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@media (max-width: 760px) {
+  .links { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .copy { margin-top: 56px; }
+  h1 { font-size: 32px; }
+  .ctas { width: 100%; flex-direction: column; }
+  .btn.lg { height: 48px; }
+  .clist { gap: 20px 28px; display: grid; grid-template-columns: 1fr 1fr; }
+}
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--ink); color: #fff; font: 500 14px/1 var(--font-ui); transition: top 150ms var(--ease); }
+.skip:focus-visible { top: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+  <div class="frame">
+    <section class="hero" aria-labelledby="h">
+      <canvas id="peaks" aria-hidden="true"></canvas>
+      <nav class="nav" aria-label="Main">
+        <a class="logo" href="#"><svg viewBox="0 0 16 16" fill="#2b2d31"><path d="M8 1 15 15H1z"/><path d="M8 7 11 13H5z" fill="#fff"/></svg>Overlook</a>
+        <div class="links"><a href="#">Pricing</a><i aria-hidden="true"></i><a href="#">Work</a><i aria-hidden="true"></i><a href="#">Services</a></div>
+        <div class="nav-cta"><a class="btn blue" href="#">Talk to us</a></div>
+      </nav>
+
+      <div class="copy">
+        <h1 id="h">Exceptionally good-looking websites for <mark>startups and enterprises</mark></h1>
+        <p class="lead">We design and build custom sites that make you look like the leader in your category and turn visitors into customers. Twelve years in, we make sure your story gets noticed, not just told.</p>
+        <div class="ctas">
+          <a class="btn blue lg" href="#">Talk to Mira<span class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="24" height="24" fill="#cfe0ff"/><circle cx="12" cy="10" r="4.5" fill="#6b4a36"/><path d="M3 24c1-6 5-8 9-8s8 2 9 8z" fill="#1d2b4a"/><path d="M7.5 9c0-3 2-5 4.5-5s4.5 2 4.5 5c-1-1.5-3-2-4.5-2S8.5 7.5 7.5 9z" fill="#2a1d14"/></svg></span></a>
+          <a class="btn white lg" href="#">Explore our work</a>
+        </div>
+        <div class="clients">
+          <p>Some of the companies<br>we've worked with</p>
+          <div class="clist" aria-label="Clients (placeholder names)">
+            <span class="c"><i><svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 1 13 4v6l-6 3-6-3V4z"/></svg></i><span><b>Quillstack</b><small>Code editor</small></span></span>
+            <span class="c"><i><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11V3l8 8V3"/></svg></i><span><b>Northbase</b><small>Databases</small></span></span>
+            <span class="c"><i><svg viewBox="0 0 14 14" fill="currentColor"><path d="M2 2h10v5H7v5H2z"/></svg></i><span><b>Pagewright</b><small>CMS</small></span></span>
+            <span class="c"><i><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M7 12V7M4 12l1-4M10 12 9 8M2 12l2-2M12 12l-2-2"/></svg></i><span><b>Embercore</b><small>Inference</small></span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="rule" aria-hidden="true"></div>
+    <div style="height:48px"></div>
+  </div>
+</main>
+<script>
+// A snowfield painted once: a ridged height field, lit from the upper left (hillshade),
+// snow on lit faces, blue shadowed snow and rock on steep shadowed faces, faded into the page.
+(() => {
+  const c = document.getElementById("peaks"), ctx = c.getContext("2d");
+  const h2 = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const sm = (t) => t * t * (3 - 2 * t);
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const a = h2(xi, yi), b = h2(xi + 1, yi), cc = h2(xi, yi + 1), d = h2(xi + 1, yi + 1), u = sm(xf), v = sm(yf);
+    return a + (b - a) * u + (cc - a) * v + (a - b - cc + d) * u * v; };
+  const R = (x, y) => { let s = 0, a = .6, f = 1; for (let i = 0; i < 6; i++) { const n = 1 - Math.abs(vn(x * f, y * f) * 2 - 1); s += a * n * n; a *= .5; f *= 2.05; } return s; };
+  function draw() {
+    const w = Math.round(c.clientWidth), h = Math.round(c.clientHeight); if (!w) return;
+    c.width = w; c.height = h;
+    const img = ctx.createImageData(w, h), d = img.data, S = 1 / 150, L = [-.62, -.55, .56];
+    const sky = new Float32Array(w);
+    for (let x = 0; x < w; x++) sky[x] = h * (.58 - .55 * R(x * S * .75, 4.2));
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let r, g, b;
+      if (y < sky[x]) { const t = y / h; r = 192 + t * 28; g = 210 + t * 22; b = 230 + t * 14; }
+      else {
+        const X = x * S, Y = y * S, e = S * .7;
+        const Hf = (u, v) => R(u * 1.1, v * .38 + 7) * .7 + R(u * 3, v * 3 + 11) * .12;
+        const hx = (Hf(X + e, Y) - Hf(X - e, Y)) / (2 * e), hy = (Hf(X, Y + e) - Hf(X, Y - e)) / (2 * e);
+        let nx = -hx * .55, ny = -hy * .55 + .2, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+        const lit = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]), steep = 1 - nz;
+        const grain = h2(x, y) * .06;
+        if (steep > .3 && lit < .44) { const k = .5 + lit + grain; r = 74 * k + 40; g = 88 * k + 46; b = 108 * k + 56; }
+        else { const k = Math.min(1, lit * 1.15 + grain); r = 168 + 84 * k; g = 186 + 66 * k; b = 212 + 42 * k; }
+        r += (214 - r) * .22; g += (226 - g) * .22; b += (240 - b) * .22;
+        if (y - sky[x] < 1.5) { r = (r + 220) / 2; g = (g + 230) / 2; b = (b + 240) / 2; }
+      }
+      const f2 = sm(Math.max(0, Math.min(1, (y / h - .34) / .46)));
+      r += (255 - r) * f2; g += (255 - g) * f2; b += (255 - b) * f2;
+      const i = (y * w + x) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  draw();
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 150); });
+})();
+</script>
+</body>
+</html>

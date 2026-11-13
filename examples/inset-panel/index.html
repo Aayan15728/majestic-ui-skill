@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#efe7d8">
+<title>Quotaline — the CRM that sends the follow-up for you</title>
+<style>
+@font-face { font-family: "Geist Serif"; src: url(../fonts/geist-serif-regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist"; src: url(../fonts/geist-sans-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+:root {
+  --canvas: #efe7d8;
+  --paper: #f7f2e8;
+  --paper-2: #e6dccb;
+  --ink: #1a1714;
+  --ink-2: #5d554c;
+  --line: #d8ccb8;
+  --night: #151413;
+  --night-2: #232120;
+  --night-line: rgb(239 231 216 / .16);
+  --on-night: #efe7d8;
+  --on-night-2: #a69e93;
+  --accent: #f0621f;
+  --accent-ink: #c8410c;
+  --accent-btn: #d4460f;
+  --accent-soft: #f9d6c0;
+  --font-display: "Geist Serif", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --gutter: 20px;
+}
+@media (min-width: 810px) { :root { --gutter: 48px; } }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, figure, blockquote { margin: 0; padding: 0; }
+ul { list-style: none; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+main { overflow-x: clip; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 16px; border-radius: 8px; background: var(--ink); color: var(--canvas); font-size: 14px; transition: top 150ms var(--ease); }
+.skip:focus { top: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- nav on the cream canvas ---------- */
+.nav { height: 76px; padding-inline: 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.logo { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 500 24px/1 var(--font-ui); letter-spacing: -0.03em; }
+.logo svg { width: 20px; height: 20px; }
+.links { display: flex; gap: 40px; font-size: 16px; font-weight: 500; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; transition: color 150ms var(--ease); }
+.links a:hover { color: var(--accent-ink); }
+.nav-end { display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 500; }
+.nav-end > a:first-child { display: inline-flex; align-items: center; min-height: 44px; }
+.pill-dark { display: inline-flex; align-items: center; height: 48px; padding-inline: 26px; border-radius: 999px; background: var(--ink); color: var(--canvas); font-size: 15px; font-weight: 500; transition: background 150ms var(--ease), transform 150ms var(--ease); }
+.pill-dark:hover { background: #33302c; }
+.pill-dark:active { transform: scale(.95); }
+
+/* ---------- the inset dark panel ---------- */
+.panel { margin: 0 8px; border-radius: 32px; background: var(--night); color: var(--on-night); padding: 96px var(--gutter) 64px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.proof { display: flex; align-items: center; gap: 16px; font-size: 20px; color: var(--on-night-2); letter-spacing: -0.01em; }
+.faces { display: flex; }
+.faces span { width: 34px; height: 34px; margin-left: -8px; border-radius: 50%; border: 2px solid var(--night); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--ink); }
+.faces span:first-child { margin-left: 0; }
+.proof i { width: 1px; height: 22px; background: var(--on-night-2); }
+.panel h1 { margin-top: 40px; font: 400 88px/0.98 var(--font-display); letter-spacing: -0.035em; max-width: 17ch; }
+.lead { margin-top: 26px; max-width: 47ch; font-size: 19px; line-height: 1.6; color: var(--on-night-2); }
+.cta { margin-top: 30px; display: inline-flex; align-items: center; gap: 14px; height: 56px; padding-inline: 32px 26px; border-radius: 999px; background: var(--accent-btn); color: #fff; font-size: 18px; font-weight: 500; transition: background 150ms var(--ease), transform 150ms var(--ease); }
+.cta:hover { background: #bf3c0b; }
+.cta:active { transform: scale(.95); }
+.cta svg { width: 16px; height: 16px; }
+
+/* the deck: three cards hanging from the CTA on drawn connectors */
+.deck { position: relative; width: 800px; height: 488px; margin-top: 0; }
+.wires { position: absolute; inset: 0 0 auto 0; width: 800px; height: 112px; color: #5a5650; }
+.card { position: absolute; background: var(--paper); color: var(--ink); border-radius: 16px; text-align: left; border: 1px solid rgb(255 255 255 / .5); }
+.card.left { left: 0; top: 112px; width: 300px; height: 324px; padding: 22px 22px 24px; }
+.card.right { right: 0; top: 112px; width: 300px; height: 324px; padding: 22px 22px 24px 92px; }
+.card.mid { left: 236px; top: 64px; width: 336px; min-height: 392px; padding: 26px 20px 22px; z-index: 2; border-color: var(--paper-2); }
+.gauge { width: 210px; height: 120px; display: block; margin: 0 auto; }
+.gauge-read { margin-top: -80px; text-align: center; }
+.gauge-read b { display: block; font: 400 24px/1 var(--font-display); }
+.gauge-read span { display: block; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; background: var(--accent-soft); color: #8a2e07; }
+.gauge-chip { display: block; width: max-content; margin: 18px auto 0; }
+.meters { margin-top: 26px; display: grid; gap: 16px; padding-right: 64px; }
+.meters li { font-size: 13px; }
+.meters .row { display: flex; justify-content: space-between; }
+.bar { margin-top: 8px; height: 4px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+.bar b { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.mid h3 { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; }
+.big { margin-top: 18px; font: 400 40px/1 var(--font-display); letter-spacing: -0.02em; }
+.big-cap { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+.stacks { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-items: end; height: 112px; }
+.stack { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 100%; }
+.stack i { height: 14px; border-radius: 4px; background: #fff; border: 1px solid var(--paper-2); }
+.stack i.on { background: var(--accent); border-color: var(--accent); }
+.stack-labels { margin-top: 6px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.stack-labels span { padding: 4px 2px; border-radius: 5px; background: #fff; font-size: 12px; line-height: 1.15; text-align: center; color: var(--ink-2); }
+.versus { margin-top: 20px; display: grid; gap: 12px; }
+.versus > div { display: flex; justify-content: space-between; align-items: end; }
+.versus small { display: block; font-size: 12px; color: var(--ink-2); }
+.versus strong { display: block; margin-top: 2px; font-size: 14px; font-weight: 500; }
+.hatch { display: flex; gap: 6px; }
+.hatch i { height: 30px; border-radius: 6px; background: repeating-linear-gradient(-45deg, var(--accent) 0 5px, #ff8a4c 5px 9px); }
+.hatch i + i { background: repeating-linear-gradient(-45deg, #f7b48d 0 5px, #fbd0b4 5px 9px); }
+.pcts { margin-top: 10px; display: flex; justify-content: flex-end; gap: 30px; font-size: 15px; font-weight: 500; }
+.ledger { margin-top: 18px; display: grid; gap: 12px; font-size: 13px; }
+.ledger .month { font-size: 12px; color: var(--ink-2); }
+.ledger li { display: flex; justify-content: space-between; }
+.ledger small { display: block; font-size: 12px; color: var(--ink-2); }
+.ledger .r { text-align: right; }
+.ledger .plus { color: #1d7a45; }
+
+/* ---------- logo strip ---------- */
+.logos { padding: 72px var(--gutter) 40px; max-width: 1360px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 32px; color: var(--ink); }
+.logos span { display: inline-flex; align-items: center; gap: 8px; font-size: 30px; letter-spacing: -0.03em; white-space: nowrap; }
+.logos svg { width: 32px; height: 32px; flex: none; }
+
+/* ---------- sections ---------- */
+.wrap { max-width: 1360px; margin: 0 auto; padding-inline: var(--gutter); }
+.intro { padding-top: 120px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: end; }
+.intro h2 { font: 400 46px/1.1 var(--font-display); letter-spacing: -0.025em; max-width: 20ch; }
+.intro p { font-size: 19px; line-height: 1.6; color: var(--ink-2); max-width: 40ch; justify-self: end; }
+.tools { padding-top: 120px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.tools > * { min-width: 0; }
+.tabs { display: inline-flex; gap: 4px; padding: 6px; border-radius: 999px; background: var(--ink); }
+.tabs button { height: 44px; padding-inline: 26px; border-radius: 999px; font-size: 15px; font-weight: 500; color: #d9d1c4; transition: background 150ms var(--ease), color 150ms var(--ease); }
+.tabs button:hover { color: #fff; }
+.tabs button[aria-selected="true"] { background: var(--accent-btn); color: #fff; }
+.tabs button:focus-visible { outline-color: var(--accent); outline-offset: 2px; border-radius: 999px; }
+.tool-copy h2 { margin-top: 44px; font: 400 64px/1.02 var(--font-display); letter-spacing: -0.03em; max-width: 15ch; }
+#tool-panel > p { margin-top: 24px; font-size: 18px; line-height: 1.6; color: var(--ink-2); max-width: 44ch; }
+.feats { margin-top: 72px; display: grid; grid-template-columns: 1fr 1fr; gap: 36px 40px; max-width: 560px; }
+.feats li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; }
+.feats svg { width: 18px; height: 18px; margin-top: 4px; color: var(--accent-ink); }
+.feats b { font-size: 17px; font-weight: 500; }
+.feats p { margin-top: 4px; font-size: 15px; color: var(--ink-2); }
+.art { position: relative; border-radius: 20px; overflow: hidden; background: #e9dcc4; aspect-ratio: 470 / 560; }
+.art > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.week { position: absolute; left: 4%; right: 4%; bottom: 4%; padding: 16px; border-radius: 16px; background: rgb(247 242 232 / .55); border: 1px solid rgb(255 255 255 / .6); backdrop-filter: blur(10px); }
+.week-in { padding: 24px 20px 16px; border-radius: 12px; background: #fff; }
+.week-bars { position: relative; height: 168px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; align-items: end; }
+.week-bars i { border-radius: 8px; background: #ebe7e1; height: var(--h); transition: height 420ms var(--ease), background 150ms var(--ease); }
+.week-bars i.sel { background: var(--ink); position: relative; }
+.week-bars i.sel::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; }
+.week-line { position: absolute; left: 0; right: 0; top: 56%; border-top: 1.5px dashed #cfc9c0; pointer-events: none; }
+.week-chip { position: absolute; left: 0; top: calc(56% - 12px); padding: 4px 10px; border-radius: 999px; background: var(--accent-btn); color: #fff; font-size: 12px; font-weight: 500; }
+.week-days { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; font-size: 13px; text-align: center; color: var(--ink-2); }
+
+/* testimonials: plain quotes, the claim highlighted */
+.voices { padding-top: 140px; }
+.voices h2 { font: 400 46px/1.1 var(--font-display); letter-spacing: -0.025em; text-align: center; }
+.quotes { margin-top: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
+.quotes figure { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; }
+.stars { display: flex; gap: 4px; color: var(--accent); }
+.stars svg { width: 18px; height: 18px; }
+.quotes blockquote { font-size: 17px; line-height: 1.65; max-width: 34ch; }
+mark { background: var(--accent-soft); color: inherit; padding: 1px 4px; border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.who { display: flex; align-items: center; gap: 10px; text-align: left; font-size: 15px; }
+.who .av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 600; }
+.who b { display: block; font-weight: 600; }
+.who span { font-size: 14px; color: var(--ink-2); }
+
+/* close */
+.close { margin: 140px 8px 0; border-radius: 32px; background: var(--night); color: var(--on-night); padding: 104px var(--gutter); text-align: center; display: flex; flex-direction: column; align-items: center; }
+.close h2 { font: 400 64px/1.02 var(--font-display); letter-spacing: -0.03em; max-width: 14ch; }
+.close p { margin-top: 20px; font-size: 18px; color: var(--on-night-2); }
+.foot { padding: 36px 28px 40px; display: flex; justify-content: space-between; gap: 16px; font-size: 14px; color: var(--ink-2); }
+
+/* motion */
+@keyframes rise { from { opacity: 0; translate: 0 14px; } }
+.panel > * { animation: rise 640ms var(--ease) both; }
+.panel > :nth-child(2) { animation-delay: 70ms; }
+.panel > :nth-child(3) { animation-delay: 140ms; }
+.panel > :nth-child(4) { animation-delay: 210ms; }
+.panel > .deck { animation-duration: 760ms; animation-delay: 380ms; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1180px) {
+  .links { display: none; }
+  .logos { flex-wrap: wrap; justify-content: center; gap: 28px 48px; }
+}
+@media (max-width: 900px) {
+  .intro, .tools { grid-template-columns: 1fr; gap: 40px; }
+  .intro p { justify-self: start; }
+  .quotes { grid-template-columns: 1fr; gap: 56px; }
+  .deck { width: 336px; height: 448px; }
+  .wires .arch, .card.left, .card.right { display: none; }
+  .wires { width: 336px; left: 0; }
+  .card.mid { left: 0; }
+}
+@media (max-width: 560px) {
+  .nav { padding-inline: 16px; }
+  .nav-end > a:first-child { display: none; }
+  .pill-dark { height: 44px; padding-inline: 18px; }
+  .panel { padding-top: 64px; border-radius: 24px; }
+  .proof { font-size: 16px; gap: 12px; }
+  .faces span { width: 30px; height: 30px; }
+  .panel h1 { margin-top: 28px; font-size: 46px; line-height: 1.02; }
+  .lead { font-size: 17px; }
+  .cta { width: 100%; justify-content: center; }
+  .deck { width: 100%; max-width: 336px; }
+  .card.mid { width: 100%; }
+  .logos span { font-size: 24px; }
+  .intro { padding-top: 88px; }
+  .intro h2, .voices h2 { font-size: 34px; }
+  .tools { padding-top: 88px; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; border-radius: 28px; }
+  .tabs button { padding-inline: 12px; }
+  .tool-copy h2 { font-size: 44px; margin-top: 32px; }
+  .feats { grid-template-columns: 1fr; margin-top: 44px; }
+  .week { padding: 10px; }
+  .week-in { padding: 18px 12px 12px; }
+  .week-bars { height: 128px; gap: 6px; }
+  .week-days { gap: 6px; font-size: 12px; }
+  .voices { padding-top: 100px; }
+  .close { margin-top: 100px; padding-block: 72px; border-radius: 24px; }
+  .close h2 { font-size: 44px; }
+  .close .cta { width: auto; }
+  .foot { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="logo" href="#" aria-label="Quotaline home">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 18V9a7 7 0 0 1 7-7h5v5h-5a2 2 0 0 0-2 2v9z" fill="currentColor"/></svg>
+    Quotaline
+  </a>
+  <nav class="links" aria-label="Main">
+    <a href="#tools">Platform</a><a href="#tools">Capabilities</a><a href="#voices">Use cases</a><a href="#pricing">Pricing</a>
+  </nav>
+  <div class="nav-end">
+    <a href="#">Sign in</a>
+    <a class="pill-dark" href="#close">Contact sales</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="panel" aria-labelledby="hero-title">
+    <p class="proof">
+      <span class="faces" aria-hidden="true"><span style="background:#f2c9a8">AM</span><span style="background:#cfd8c4">JT</span><span style="background:#e8b9b0">RK</span><span style="background:#cfdce8">LO</span></span>
+      <i aria-hidden="true"></i>
+      <span>Used by <span class="num">1,000+</span> sales teams</span>
+    </p>
+    <h1 id="hero-title">The CRM that sends the follow-up</h1>
+    <p class="lead">Import leads, write one sequence, and Quotaline personalizes every email and books the meeting, so reps spend the day on calls.</p>
+    <a class="cta" href="#close">Start outreach
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+
+    <div class="deck" aria-label="Product preview: this month's outreach dashboard" role="img">
+      <svg class="wires" viewBox="0 0 800 112" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M400 0V64"/>
+        <path class="arch" d="M150 112V80Q150 34 196 34H604Q650 34 650 80V112"/>
+        <circle cx="400" cy="2" r="3" fill="#efe7d8" stroke="none"/>
+        <circle cx="400" cy="34" r="3" fill="#efe7d8" stroke="none"/>
+      </svg>
+
+      <div class="card left">
+        <svg class="gauge" viewBox="0 0 210 118" aria-hidden="true">
+          <path d="M14 108a91 91 0 0 1 182 0" fill="none" stroke="#efe2d1" stroke-width="10" stroke-linecap="round"/>
+          <path d="M14 108a91 91 0 0 1 146-72" fill="none" stroke="#f0621f" stroke-width="10" stroke-linecap="round"/>
+          <path d="M70 32a91 91 0 0 1 90 4" fill="none" stroke="#f7a77a" stroke-width="10" stroke-linecap="round"/>
+          <g stroke="#cdbfa9" stroke-width="1">
+            <path d="M38 104h6M44 76l5 3M60 54l4 4M84 40l2 5M112 36v6M138 42l-2 5M160 56l-4 4M172 78l-5 3M176 104h-6"/>
+          </g>
+          <circle cx="188" cy="74" r="7" fill="#f0621f" stroke="#fff" stroke-width="3"/>
+        </svg>
+        <div class="gauge-read"><b class="num">679</b><span>Active leads, last 30 days</span></div>
+        <span class="chip gauge-chip">High engagement</span>
+        <ul class="meters">
+          <li><div class="row"><span>Emails sent</span><span class="num">5,120</span></div><div class="bar"><b style="width:66%"></b></div></li>
+          <li><div class="row"><span>Replies</span><span class="num">384</span></div><div class="bar"><b style="width:38%"></b></div></li>
+          <li><div class="row"><span>Meetings booked</span><span class="num">96</span></div><div class="bar"><b style="width:18%"></b></div></li>
+        </ul>
+      </div>
+
+      <div class="card right">
+        <div class="hatch"><i style="flex:3"></i><i style="flex:1"></i></div>
+        <div class="pcts num"><span>80%</span><span>100%</span></div>
+        <ul class="ledger">
+          <li class="month">This month</li>
+          <li><div>Harbor &amp; Pine<small>8 Nov</small></div><div class="r"><span class="plus num">+$3,500</span><small>signed</small></div></li>
+          <li><div>Fieldnote<small>4 Nov</small></div><div class="r"><span class="num">$1,200</span><small>renewal</small></div></li>
+          <li class="month">Last month</li>
+          <li><div>Brightwell<small>28 Oct</small></div><div class="r"><span class="num">$860</span><small>upgrade</small></div></li>
+        </ul>
+      </div>
+
+      <div class="card mid">
+        <h3>Pipeline this month</h3>
+        <p class="big num">18,256</p>
+        <p class="big-cap">Leads engaged</p>
+        <div class="stacks" aria-hidden="true">
+          <div class="stack"><i></i><i></i></div>
+          <div class="stack"><i></i><i></i><i></i></div>
+          <div class="stack"><i></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="stack"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="stack"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="stack-labels" aria-hidden="true"><span>Import</span><span>Enrich</span><span>Send</span><span>Reply</span><span>Won</span></div>
+        <div class="versus">
+          <div><div><small>vs industry average</small><strong><span class="num">+42%</span> reply rate</strong></div><span class="chip">Top 10%</span></div>
+          <div><div><small>vs last month</small><strong><span class="num">+18</span> meetings</strong></div><span class="chip">Rising</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="logos" aria-label="Teams that sell with Quotaline">
+    <span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="16" cy="16" r="5" fill="currentColor"/></svg>Tallyhouse</span>
+    <span style="font-weight:600"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 6 4 16l7 10M21 6l7 10-7 10" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Ferncode</span>
+    <span style="font-weight:600"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 26 12 10l6 9 4-6 8 13z" fill="currentColor"/></svg>Ridgecamp</span>
+    <span style="font-weight:700;letter-spacing:-0.05em">lumenly</span>
+    <span style="font-family:var(--font-display);font-size:32px">Paperkite</span>
+  </section>
+
+  <section class="wrap intro" id="tools" aria-labelledby="intro-title">
+    <h2 id="intro-title">One place for the whole sales week, from first touch to signed</h2>
+    <p>Live reply tracking, sequences that write themselves and a forecast your manager can trust.</p>
+  </section>
+
+  <section class="wrap tools" aria-label="What Quotaline does">
+    <div class="tool-copy">
+      <div class="tabs" role="tablist" aria-label="Capabilities">
+        <button role="tab" id="t-0" aria-selected="true" aria-controls="tool-panel">Outreach</button>
+        <button role="tab" id="t-1" aria-selected="false" aria-controls="tool-panel" tabindex="-1">Automation</button>
+        <button role="tab" id="t-2" aria-selected="false" aria-controls="tool-panel" tabindex="-1">Analytics</button>
+        <button role="tab" id="t-3" aria-selected="false" aria-controls="tool-panel" tabindex="-1">Integrations</button>
+      </div>
+      <div id="tool-panel" role="tabpanel" aria-labelledby="t-0" tabindex="0">
+        <h2 id="tool-title">Every follow-up, sent on time</h2>
+        <p id="tool-lead">Write one sequence; Quotaline fills in each lead's company, role and last reply, then sends in their morning.</p>
+        <ul class="feats" id="tool-feats"></ul>
+      </div>
+    </div>
+    <figure class="art" aria-label="This week's interactions by day">
+      <svg viewBox="0 0 470 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="470" height="560" fill="#ead9bd"/>
+        <circle cx="330" cy="150" r="62" fill="#f6e7cc"/>
+        <path d="M0 250C90 214 170 236 250 220S400 180 470 196V560H0z" fill="#dfc7a2"/>
+        <path d="M0 300C110 270 200 300 300 282S430 250 470 262V560H0z" fill="#d2b38a"/>
+        <path d="M0 356C120 330 230 362 330 342S440 320 470 326V560H0z" fill="#c49c6e"/>
+        <path d="M0 420C140 396 260 424 360 410S450 396 470 400V560H0z" fill="#b48a5c"/>
+      </svg>
+      <div class="week">
+        <div class="week-in">
+          <div class="week-bars" id="week-bars">
+            <i style="--h:14%"></i><i style="--h:52%"></i><i class="sel" style="--h:66%"></i><i style="--h:92%"></i><i style="--h:68%"></i><i style="--h:52%"></i><i style="--h:52%"></i>
+            <span class="week-line"></span><span class="week-chip">Interactions</span>
+          </div>
+          <div class="week-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </div>
+      </div>
+    </figure>
+  </section>
+
+  <section class="wrap voices" id="voices" aria-labelledby="voices-title">
+    <h2 id="voices-title">What changed for their teams</h2>
+    <div class="quotes">
+      <figure>
+        <div class="stars" role="img" aria-label="5 out of 5"><svg viewBox="0 0 20 20" aria-hidden="true"><path id="st" d="m10 1.8 2.5 5.3 5.8.7-4.3 4 1.1 5.8L10 14.8l-5.1 2.8L6 11.8l-4.3-4 5.8-.7z" fill="currentColor"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg></div>
+        <blockquote><mark>We dropped two tools and a spreadsheet.</mark> Sequences, replies and the forecast now live in one tab, and Monday pipeline review takes ten minutes.</blockquote>
+        <figcaption class="who"><span class="av" style="background:#f2c9a8">IR</span><span><b>Ines Rocha</b><span>Head of sales, Larkfield</span></span></figcaption>
+      </figure>
+      <figure>
+        <div class="stars" role="img" aria-label="5 out of 5"><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg></div>
+        <blockquote>Six weeks in and <mark>our reply rate went from 4% to 11%.</mark> The send-in-their-morning setting did most of that on its own.</blockquote>
+        <figcaption class="who"><span class="av" style="background:#cfd8c4">DO</span><span><b>Dami Okafor</b><span>Founder, Brightwell</span></span></figcaption>
+      </figure>
+      <figure>
+        <div class="stars" role="img" aria-label="5 out of 5"><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg><svg viewBox="0 0 20 20" aria-hidden="true"><use href="#st"/></svg></div>
+        <blockquote>New reps book their first meeting in week one. <mark>Onboarding went from a month to four days</mark> because the sequences are already written.</blockquote>
+        <figcaption class="who"><span class="av" style="background:#f1cfc8">MK</span><span><b>Mara Kessel</b><span>Sales lead, Harbor &amp; Pine</span></span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="close" id="close" aria-labelledby="close-title">
+    <h2 id="close-title">Send your first sequence this afternoon</h2>
+    <p id="pricing">14-day trial · from $29 per seat · cancel anytime</p>
+    <a class="cta" href="#">Start outreach
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+</main>
+
+<footer class="foot"><span>© 2026 Quotaline. All names and numbers are placeholders.</span><span>Privacy, terms and status</span></footer>
+
+<script>
+// capability tabs: roving tabindex, arrow keys, one panel whose content swaps
+const ICON = {
+  target: '<svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/></svg>',
+  person: '<svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 16c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  ring: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M15.5 9A6.5 6.5 0 1 1 9 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  bolt: '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M10 2 4 10h5l-1 6 6-8H9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+const TABS = [
+  { h: "Every follow-up, sent on time", p: "Write one sequence; Quotaline fills in each lead's company, role and last reply, then sends in their morning.",
+    f: [["target","Sequences","Five steps, written once"],["person","Personalization","Company, role and last reply"],["ring","Send windows","Their 9 a.m., not yours"],["bolt","Reply detection","Stops the moment they answer"]], bars: [14,52,66,92,68,52,52], sel: 2 },
+  { h: "The busywork runs itself", p: "Rules move a lead when it replies, books, or goes quiet, and the CRM record updates without anyone typing.",
+    f: [["bolt","Triggers","Reply, open, booking, silence"],["target","Routing","The right rep, by territory"],["ring","Task queues","One list per morning"],["person","Handoffs","Notes travel with the lead"]], bars: [30,44,58,40,76,24,18], sel: 4 },
+  { h: "A forecast you can defend", p: "Every number links back to the emails and calls behind it, so pipeline review is a conversation, not an argument.",
+    f: [["ring","Forecast","Weighted by real replies"],["target","Win rates","By sequence and by rep"],["person","Coaching","Calls with the most lift"],["bolt","Alerts","Deals going cold, early"]], bars: [48,62,70,54,60,20,12], sel: 1 },
+  { h: "Fits the stack you have", p: "Two-way sync with your inbox, calendar and billing, so the CRM never disagrees with where the work happened.",
+    f: [["bolt","Inbox sync","Both directions, every 60 s"],["ring","Calendar","Bookings land as meetings"],["target","Billing","Signed deals become invoices"],["person","Single sign-on","SAML and SCIM included"]], bars: [22,36,40,44,40,30,26], sel: 3 },
+];
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+const panel = document.getElementById("tool-panel");
+const bars = [...document.querySelectorAll("#week-bars i")];
+function show(i, focus) {
+  tabs.forEach((t, j) => { t.setAttribute("aria-selected", j === i); t.tabIndex = j === i ? 0 : -1; });
+  panel.setAttribute("aria-labelledby", tabs[i].id);
+  const d = TABS[i];
+  document.getElementById("tool-title").textContent = d.h;
+  document.getElementById("tool-lead").textContent = d.p;
+  document.getElementById("tool-feats").innerHTML = d.f.map(([ic, b, p]) => `<li>${ICON[ic]}<div><b>${b}</b><p>${p}</p></div></li>`).join("");
+  bars.forEach((b, j) => { b.style.setProperty("--h", d.bars[j] + "%"); b.classList.toggle("sel", j === d.sel); });
+  if (focus) tabs[i].focus();
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => show(i));
+  t.addEventListener("keydown", (e) => {
+    const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (k) { e.preventDefault(); show((i + k + tabs.length) % tabs.length, true); }
+    if (e.key === "Home") { e.preventDefault(); show(0, true); }
+    if (e.key === "End") { e.preventDefault(); show(tabs.length - 1, true); }
+  });
+});
+show(0);
+</script>
+</body>
+</html>
